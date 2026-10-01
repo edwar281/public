@@ -1,0 +1,5 @@
+data/
+__pycache__/
+*.duckdb
+*.duckdb.wal
+out/lgbm_final.txt

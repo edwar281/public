@@ -1,0 +1,453 @@
+<title>KKBox Churn Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (max 1080px). Executive summary first, then two evidence chapters
+   (survival, prediction), then methods. Charts sit on quiet panels; the data is the only loud thing. */
+:root{
+  --bg:#f6f7f8; --panel:#ffffff; --ink:#0f1720; --ink-2:#4a5562; --muted:#7b8591;
+  --rule:#e3e6ea; --axis:#c4cad1; --accent:#1d4f91; --accent-soft:#e6eef8;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --good:#006300; --crit:#d03b3b;
+  --band1:rgba(42,120,214,.12); --band2:rgba(235,104,52,.12);
+  --f-display:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1116; --panel:#161a20; --ink:#f2f4f7; --ink-2:#b8c0ca; --muted:#8a939e;
+  --rule:#262c34; --axis:#3a424c; --accent:#8db8f0; --accent-soft:#1a2738;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --good:#0ca30c; --crit:#e66767;
+  --band1:rgba(57,135,229,.18); --band2:rgba(217,89,38,.18); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --panel:#161a20; --ink:#f2f4f7; --ink-2:#b8c0ca; --muted:#8a939e;
+  --rule:#262c34; --axis:#3a424c; --accent:#8db8f0; --accent-soft:#1a2738;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --good:#0ca30c; --crit:#e66767;
+  --band1:rgba(57,135,229,.18); --band2:rgba(217,89,38,.18); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:grid;gap:56px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.08;font-weight:700}
+h2{font-size:clamp(22px,3vw,28px);line-height:1.2;font-weight:650}
+h3{font-size:17px;font-weight:600;line-height:1.3}
+p{margin:0;max-width:68ch}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.mono{font-family:var(--f-mono)}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+header{display:grid;gap:18px}
+.byline{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;color:var(--ink-2);font-size:15px}
+.byline strong{color:var(--ink);font-weight:600}
+.lede{font-size:18px;color:var(--ink-2);max-width:62ch}
+.scale{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:12.5px;padding:5px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--panel);color:var(--ink-2)}
+.chip b{color:var(--ink);font-weight:500}
+
+/* hero result */
+.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:center;background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:28px}
+.hero .num{font-size:clamp(56px,9vw,88px);font-weight:700;line-height:1;letter-spacing:-.03em;font-family:var(--f-display)}
+.hero .num span{color:var(--muted);font-weight:500;font-size:.45em;letter-spacing:0}
+.hero p{color:var(--ink-2)}
+@media (max-width:760px){.hero{grid-template-columns:1fr}}
+
+/* findings */
+.findings{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.finding{background:var(--panel);padding:22px;display:grid;gap:10px;align-content:start;min-width:0;grid-column:span 2}
+.finding:nth-child(n+4){grid-column:span 3}
+@media (max-width:860px){.findings{grid-template-columns:1fr}.finding,.finding:nth-child(n+4){grid-column:auto}}
+.finding .k{font-size:30px;font-weight:700;letter-spacing:-.02em;font-family:var(--f-display);line-height:1.1}
+.finding .k small{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0}
+.finding p{font-size:15px;color:var(--ink-2)}
+.finding .so{font-size:14px;color:var(--ink);border-top:1px solid var(--rule);padding-top:10px}
+.finding .so b{font-weight:600}
+
+/* chapter */
+section.chapter{display:grid;gap:24px}
+.chapter-head{display:grid;gap:10px}
+.chapter-head p{color:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.grid2{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:20px;display:grid;gap:12px;min-width:0;align-content:start}
+.panel .sub{font-size:14px;color:var(--ink-2)}
+.panel .note{font-size:13px;color:var(--muted)}
+.chart{width:100%;min-height:260px;position:relative}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.chart .lbl{fill:var(--ink-2);font-family:var(--f-body);font-size:12px}
+.chart .lbl-strong{fill:var(--ink);font-family:var(--f-body);font-size:12px;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2)}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)!important}
+.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--rule);border-radius:999px;background:var(--bg);flex-wrap:wrap}
+.seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink-2);padding:5px 12px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--rule)}
+.row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center}
+
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--ink-2);font-size:12.5px}
+td.mono{font-family:var(--f-mono);font-size:13px}
+tr.final td{font-weight:600}
+.tblwrap{overflow-x:auto}
+
+.methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+.methods .panel p,.methods .panel li{font-size:14.5px;color:var(--ink-2)}
+.methods ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.translate td,.translate th{text-align:left}
+footer{display:grid;gap:8px;border-top:1px solid var(--rule);padding-top:20px;color:var(--muted);font-size:13.5px}
+
+#tip{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--rule);box-shadow:0 6px 24px rgba(0,0,0,.12);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.45;z-index:10;max-width:260px}
+#tip b{font-weight:600}
+#tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+@media (prefers-reduced-motion:no-preference){.chart path.ln{transition:opacity .2s}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Portfolio case study · Subscription churn</div>
+  <h1>Who leaves, and when: churn across 6.8 million subscribers</h1>
+  <div class="byline"><strong>Will Edwards, PhD</strong><span>Analytics &amp; Data Science leader · 20+ years in telecom and financial services</span><a id="repo" href="https://github.com/edwar281/public/tree/main/kkbox-churn">Code on GitHub</a></div>
+  <p class="lede">A subscription business loses customers at renewal. Using public data from KKBox, a large Asian music-streaming service with carrier-style billing, I measured when subscribers leave, what predicts it, and how well next month's churners can be found ahead of time.</p>
+  <div class="scale" aria-label="Data scale">
+    <span class="chip"><b>392M</b> daily usage rows</span>
+    <span class="chip"><b>23M</b> billing transactions</span>
+    <span class="chip"><b>6.8M</b> member profiles</span>
+    <span class="chip"><b>564K</b> new paid subscribers tracked over time</span>
+    <span class="chip"><b>1.96M</b> labelled renewal decisions</span>
+  </div>
+</header>
+
+<section class="hero" aria-label="Headline result">
+  <div style="display:grid;gap:12px">
+    <div class="eyebrow">Headline result · out-of-time test, March 2017</div>
+    <div class="num" id="heroNum">61%<span> of churners</span></div>
+    <p>were among the <b>10% of subscribers</b> the model ranked riskiest, scored before the month began. That is <b id="heroLift">6.1×</b> better than random targeting, so a retention team can reach most at-risk customers while contacting a small fraction of the base.</p>
+  </div>
+  <div class="chart" id="gainsHero" style="min-height:220px"></div>
+</section>
+
+<section class="chapter" aria-labelledby="take">
+  <div class="chapter-head">
+    <div class="eyebrow">Executive summary</div>
+    <h2 id="take">Five findings and what I would do about them</h2>
+  </div>
+  <div class="findings" id="findings"></div>
+</section>
+
+<section class="chapter" aria-labelledby="ch1">
+  <div class="chapter-head">
+    <div class="eyebrow">Chapter 1 · Survival analysis</div>
+    <h2 id="ch1">When do new subscribers leave?</h2>
+    <p>I followed every genuinely new paying subscriber who joined between March 2015 and December 2016 until they churned or the data ended. Customers still active at the end are counted as censored, not as retained, so later sign-ups don't flatter the numbers.</p>
+  </div>
+  <div class="panel">
+    <div class="row">
+      <h3>Share of subscribers still active, by months since first payment</h3>
+      <div class="seg" role="group" aria-label="Split survival curve by" id="kmSeg">
+        <button type="button" aria-pressed="true" data-k="billing">Billing</button>
+        <button type="button" aria-pressed="false" data-k="plan">Plan length</button>
+        <button type="button" aria-pressed="false" data-k="origin">Acquisition</button>
+      </div>
+    </div>
+    <div class="legend" id="kmLegend"></div>
+    <div class="chart" id="km" style="min-height:320px"></div>
+    <div class="note">Kaplan–Meier estimates with 95% confidence bands (Greenwood). Bands are narrower than the lines at this sample size. Curves stop where fewer than 200 subscribers remain at risk.</div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Monthly churn hazard by billing type</h3>
+      <div class="sub">Probability of churning in a month, given the subscriber made it that far</div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Auto-renew</span><span><i style="background:var(--s2)"></i>Manual renewal</span></div>
+      <div class="chart" id="hazard"></div>
+      <div class="note">Manual-renewal risk spikes at the first expiry and again near month 7, when 180-day plans run out. Auto-renew risk stays low and flat. Because the hazards are not proportional, a single hazard ratio averages over very different months.</div>
+    </div>
+    <div class="panel">
+      <h3>What changes churn risk: Cox model hazard ratios</h3>
+      <div class="sub">Below 1 = lower risk. Each factor is adjusted for all the others; stratified by sign-up quarter</div>
+      <div class="chart" id="forest" style="min-height:360px"></div>
+      <div class="note" id="coxNote"></div>
+    </div>
+  </div>
+</section>
+
+<section class="chapter" aria-labelledby="ch2">
+  <div class="chapter-head">
+    <div class="eyebrow">Chapter 2 · Predictive model</div>
+    <h2 id="ch2">Can we find next month's churners in advance?</h2>
+    <p>I trained a gradient-boosted model on 993K subscribers whose memberships expired in February 2017, using only information available before February began. I then tested it, untouched, on 971K subscribers expiring in March. This is how the model would actually be used: trained on last month, scored on next month.</p>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Where the predictive signal comes from</h3>
+      <div class="sub">Each row adds a data source. Scores are on the March out-of-time test</div>
+      <div class="tblwrap"><table id="specTbl"></table></div>
+      <div class="note">AUC: chance a random churner is ranked above a random stayer (0.5 = coin flip). PR-AUC accounts for churners being rare; the March base rate is 9.0%.</div>
+    </div>
+    <div class="panel">
+      <h3>Churners found vs. share of base contacted</h3>
+      <div class="legend"><span><i style="background:var(--s1)"></i>Model ranking</span><span><i class="dash"></i>Random targeting</span></div>
+      <div class="chart" id="gains"></div>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h3>Calibration: predicted vs. actual churn rate</h3>
+      <div class="sub">March test set, ten equal-size risk groups (log scale)</div>
+      <div class="legend"><span><i style="background:var(--s2)"></i>As trained (February)</span><span><i style="background:var(--s1)"></i>After monthly recalibration</span><span><i class="dash"></i>Perfect calibration</span></div>
+      <div class="chart" id="calib" style="min-height:300px"></div>
+      <div class="note" id="calNote"></div>
+    </div>
+    <div class="panel">
+      <h3>Strongest drivers of predicted risk</h3>
+      <div class="sub">Mean absolute SHAP contribution (log-odds), 20K March subscribers</div>
+      <div class="chart" id="shap" style="min-height:360px"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Churn rate by risk decile, March test set</h3>
+    <div class="chart" id="deciles" style="min-height:240px"></div>
+  </div>
+</section>
+
+<section class="chapter" aria-labelledby="meth" id="methods">
+  <div class="chapter-head">
+    <div class="eyebrow">Methods &amp; data</div>
+    <h2 id="meth">How this was built</h2>
+  </div>
+  <div class="methods">
+    <div class="panel">
+      <h3>Data and definitions</h3>
+      <ul>
+        <li>Source: WSDM-KKBox Churn Prediction Challenge (Kaggle), released by KKBox for research. Member IDs are anonymized.</li>
+        <li>Churn follows the company's own rule: no new paid subscription within 30 days of the membership expiring. Cancelling pulls the expiry date forward.</li>
+        <li>New-subscriber cohort: registered in 2015 or later, first paid transaction between Mar 2015 and Dec 2016. Requiring two months of history before the first payment avoids mistaking returning members for new ones (left truncation).</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Modelling choices</h3>
+      <ul>
+        <li>Point-in-time features: every input is dated before the month in which the label is decided. That rules out leakage from a renewal that has already happened.</li>
+        <li>Out-of-time test on the following month, rather than a random split, which would overstate accuracy.</li>
+        <li>LightGBM, early-stopped on a 15% in-time holdout. Calibration repaired by re-estimating the intercept and slope on a 5% labelled slice of the new month, then evaluated on the other 95%.</li>
+        <li>Survival: Kaplan–Meier with Greenwood bands; Cox proportional hazards on a 200K sample, stratified by sign-up quarter; non-proportionality checked with month-by-month hazards.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Engineering at scale</h3>
+      <ul>
+        <li>A 30 GB CSV of daily listening logs, streamed into compressed Parquet (4.4 GB) with integer keys, on a 2-core, 8 GB machine.</li>
+        <li>DuckDB for all joins and window functions; features for about 2M labelled subscribers built in a few minutes.</li>
+        <li>Fully reproducible pipeline: download, then spells, survival, features and model as five scripts.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Reading this as a telecom operator</h3>
+    <div class="tblwrap"><table class="translate">
+      <thead><tr><th>KKBox</th><th>Carrier equivalent</th><th>What the analysis says</th></tr></thead>
+      <tbody>
+        <tr><td>Auto-renew billing</td><td>AutoPay / paperless enrollment</td><td>About half the churn hazard. Enrollment at sale is the strongest retention lever in the data.</td></tr>
+        <tr><td>Prepaid 90–410 day plans</td><td>Term agreements, annual prepay</td><td>About 70% lower hazard while the term runs. Watch the cliff at term end.</td></tr>
+        <tr><td>Free trial → paid</td><td>Promotional or introductory pricing</td><td>Only 10% of trials convert, and converts churn 1.7× faster than direct sign-ups.</td></tr>
+        <tr><td>Manual renewal at expiry</td><td>Promo roll-off, contract end</td><td>Risk is concentrated in a predictable window, so outreach can be scheduled.</td></tr>
+        <tr><td>Daily listening</td><td>Network usage, data sessions</td><td>Adds little beyond billing signals for one-month-ahead churn.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<footer>
+  <div>Data: WSDM-KKBox's Churn Prediction Challenge, Kaggle (KKBox, 2017). Analysis and dashboard by Will Edwards. KKBox has no affiliation with this work.</div>
+  <div>Limitations: one service, 2015–2017. The model is evaluated on one out-of-time month. Effects are associations, not randomized treatment effects; for example, auto-renew customers may differ in commitment before they enroll.</div>
+</footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const D = {"surv":{"cohort":{"n":563747,"churned":227720,"start":"2015-03-01","end":"2016-12-31"},"overall":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9946,0.8913,0.833,0.7802,0.7435,0.7189,0.6976,0.6632,0.644,0.6291,0.614,0.5991,0.5834,0.5589,0.5278,0.5138,0.501,0.4877,0.474],"lo":[0.9944,0.8905,0.832,0.7791,0.7423,0.7177,0.6963,0.6619,0.6427,0.6277,0.6126,0.5976,0.5819,0.5574,0.5262,0.5122,0.4993,0.4859,0.4722],"hi":[0.9948,0.8921,0.834,0.7813,0.7446,0.7202,0.6988,0.6645,0.6454,0.6304,0.6154,0.6005,0.5848,0.5604,0.5294,0.5154,0.5027,0.4894,0.4759],"n":563747,"events":227720},"segments":{"billing":{"Auto-renew":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9912,0.9436,0.8937,0.8607,0.8432,0.8274,0.8119,0.796,0.7815,0.7695,0.7553,0.7394,0.7217,0.6901,0.6753,0.6622,0.6475,0.6303,0.6117],"lo":[0.9909,0.9428,0.8927,0.8595,0.8419,0.8261,0.8106,0.7946,0.78,0.768,0.7537,0.7377,0.72,0.6883,0.6734,0.6602,0.6454,0.6281,0.6092],"hi":[0.9915,0.9444,0.8947,0.8619,0.8444,0.8287,0.8133,0.7975,0.783,0.771,0.7569,0.741,0.7234,0.6919,0.6772,0.6642,0.6496,0.6325,0.6141],"n":339636,"events":93980},"Manual renewal":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9997,0.8121,0.741,0.6582,0.5923,0.5542,0.5237,0.4617,0.4359,0.4167,0.4003,0.3868,0.374,0.3605,0.3055,0.2904,0.2808,0.2733,0.2669],"lo":[0.9996,0.8104,0.7392,0.6562,0.5902,0.5521,0.5215,0.4595,0.4337,0.4145,0.3981,0.3845,0.3717,0.3582,0.3031,0.288,0.2783,0.2708,0.2643],"hi":[0.9997,0.8137,0.7428,0.6602,0.5944,0.5563,0.5259,0.4639,0.4381,0.4189,0.4026,0.389,0.3763,0.3628,0.3079,0.2928,0.2832,0.2758,0.2694],"n":224111,"events":133740}},"plan":{"Monthly":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.994,0.8823,0.8179,0.7602,0.7267,0.7006,0.6787,0.6585,0.6388,0.6231,0.6071,0.5919,0.5756,0.5507,0.5373,0.5238,0.5102,0.4956,0.4806],"lo":[0.9938,0.8814,0.8168,0.759,0.7254,0.6993,0.6774,0.6571,0.6374,0.6216,0.6056,0.5904,0.574,0.5491,0.5357,0.5221,0.5085,0.4937,0.4786],"hi":[0.9942,0.8832,0.8189,0.7614,0.7279,0.7019,0.6801,0.6599,0.6402,0.6245,0.6085,0.5934,0.5771,0.5523,0.539,0.5254,0.512,0.4974,0.4825],"n":495524,"events":201087},"Other":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9948,0.7528,0.674,0.6067,0.5696,0.5436,0.5023,0.4668,0.4467,0.4277,0.4133,0.3854,0.3676,0.3481,0.3126,0.2988,0.2901,0.2833,0.2756],"lo":[0.9933,0.745,0.6655,0.5978,0.5606,0.5346,0.4932,0.4577,0.4377,0.4187,0.4044,0.3765,0.3588,0.3394,0.3041,0.2905,0.2819,0.2751,0.2674],"hi":[0.9959,0.7605,0.6824,0.6154,0.5785,0.5526,0.5113,0.4758,0.4557,0.4366,0.4222,0.3942,0.3763,0.3568,0.321,0.3072,0.2984,0.2915,0.2838],"n":11815,"events":8779},"Prepaid 90d+":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9995,0.9994,0.9994,0.9932,0.9285,0.9186,0.9071,0.7493,0.7356,0.7289,0.7225,0.7145,0.7068,0.686,0.4973,0.4813,0.4749,0.4701,0.4656],"lo":[0.9993,0.9992,0.9992,0.9924,0.9262,0.9162,0.9044,0.7452,0.7314,0.7247,0.7183,0.7102,0.7024,0.6814,0.4912,0.4752,0.4687,0.4639,0.4593],"hi":[0.9997,0.9996,0.9996,0.9939,0.9307,0.921,0.9096,0.7534,0.7397,0.7331,0.7267,0.7188,0.7112,0.6906,0.5033,0.4874,0.481,0.4763,0.4719],"n":56408,"events":17854}},"origin":{"Converted from free trial":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.974,0.7761,0.6995,0.6347,0.5897,0.5615,0.5372,0.5036,0.484,0.4668,0.4487,0.4348,0.4198,0.4015,0.378,0.365,0.3539,0.3427,0.333],"lo":[0.9723,0.7717,0.6947,0.6296,0.5844,0.5561,0.5318,0.498,0.4783,0.4612,0.443,0.429,0.414,0.3956,0.3721,0.359,0.3478,0.3365,0.3268],"hi":[0.9756,0.7804,0.7043,0.6398,0.595,0.5669,0.5427,0.5091,0.4896,0.4725,0.4544,0.4405,0.4255,0.4073,0.384,0.371,0.36,0.3488,0.3393],"n":35599,"events":19829},"Direct paid start":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.996,0.8991,0.842,0.7899,0.7537,0.7294,0.7082,0.6737,0.6546,0.6398,0.6249,0.6099,0.5942,0.5694,0.5377,0.5237,0.5109,0.4975,0.4836],"lo":[0.9958,0.8983,0.841,0.7888,0.7525,0.7282,0.7069,0.6724,0.6532,0.6384,0.6235,0.6085,0.5927,0.5678,0.5361,0.522,0.5092,0.4957,0.4816],"hi":[0.9961,0.8999,0.843,0.791,0.7549,0.7306,0.7094,0.6751,0.656,0.6412,0.6264,0.6114,0.5957,0.5709,0.5394,0.5254,0.5126,0.4993,0.4855],"n":528148,"events":207891}},"age_band":{"13-24":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9987,0.8558,0.7923,0.7136,0.6486,0.6085,0.5749,0.5242,0.4945,0.4711,0.45,0.4316,0.4147,0.3976,0.3598,0.3442,0.3319,0.3209,0.311],"lo":[0.9985,0.8536,0.7898,0.7107,0.6455,0.6053,0.5716,0.5208,0.4911,0.4677,0.4466,0.4281,0.4112,0.3941,0.3561,0.3404,0.3281,0.317,0.307],"hi":[0.9989,0.858,0.7948,0.7164,0.6517,0.6116,0.5781,0.5275,0.4979,0.4745,0.4535,0.4351,0.4182,0.4012,0.3635,0.3479,0.3357,0.3248,0.315],"n":98212,"events":54224},"25-34":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9983,0.8798,0.824,0.7688,0.7236,0.6926,0.662,0.6041,0.5804,0.5608,0.543,0.526,0.5077,0.4822,0.4332,0.4173,0.4057,0.396,0.3872],"lo":[0.9979,0.8774,0.8211,0.7656,0.7202,0.6891,0.6583,0.6003,0.5765,0.5568,0.5389,0.5219,0.5036,0.4779,0.4287,0.4127,0.401,0.3912,0.3823],"hi":[0.9986,0.8822,0.8268,0.7719,0.727,0.6961,0.6656,0.608,0.5843,0.5647,0.547,0.5301,0.5119,0.4864,0.4378,0.4219,0.4103,0.4007,0.392],"n":69182,"events":33608},"35-44":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9982,0.8503,0.7913,0.7365,0.6939,0.6679,0.6408,0.5784,0.5543,0.5371,0.5216,0.5089,0.493,0.4693,0.4188,0.4034,0.3924,0.3826,0.3744],"lo":[0.9976,0.8457,0.786,0.7307,0.6878,0.6617,0.6344,0.5716,0.5474,0.5301,0.5145,0.5017,0.4858,0.4618,0.411,0.3954,0.3843,0.3742,0.3659],"hi":[0.9987,0.8548,0.7965,0.7421,0.6999,0.6741,0.6472,0.5851,0.5611,0.544,0.5286,0.516,0.5002,0.4767,0.4267,0.4114,0.4005,0.3909,0.3829],"n":23288,"events":11503},"45+":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9974,0.8583,0.7916,0.7425,0.7044,0.6772,0.6572,0.6027,0.5818,0.5706,0.5576,0.5455,0.5332,0.5101,0.4461,0.4312,0.4222,0.4104,0.4028],"lo":[0.9962,0.8516,0.7838,0.734,0.6955,0.668,0.6479,0.5928,0.5718,0.5605,0.5474,0.5352,0.5226,0.4992,0.4343,0.4192,0.41,0.3979,0.3901],"hi":[0.9982,0.8648,0.7992,0.7507,0.7131,0.6862,0.6664,0.6124,0.5917,0.5806,0.5678,0.5558,0.5436,0.5208,0.4578,0.4431,0.4343,0.4228,0.4156],"n":10742,"events":5032},"Unknown":{"t":[0,30,60,90,120,150,180,210,240,270,300,330,360,390,420,450,480,510,540],"s":[0.9924,0.9067,0.8496,0.8044,0.7774,0.7585,0.7426,0.7199,0.7051,0.6936,0.6808,0.667,0.6522,0.626,0.6033,0.5906,0.5774,0.5625,0.546],"lo":[0.9921,0.9058,0.8485,0.8031,0.776,0.7571,0.7411,0.7184,0.7035,0.692,0.6792,0.6654,0.6505,0.6241,0.6014,0.5886,0.5753,0.5603,0.5436],"hi":[0.9927,0.9077,0.8508,0.8057,0.7788,0.76,0.7441,0.7215,0.7067,0.6952,0.6825,0.6687,0.6539,0.6278,0.6052,0.5925,0.5795,0.5647,0.5484],"n":362323,"events":123353}}},"hazard":{"overall":[0.0284,0.1333,0.0682,0.0481,0.0343,0.0286,0.0482,0.0281,0.023,0.0233,0.024,0.0239],"Auto-renew":[0.0428,0.06,0.0395,0.0213,0.0201,0.0186,0.0189,0.0178,0.0152,0.0181,0.0206,0.0224],"Manual renewal":[0.0065,0.2404,0.1201,0.1012,0.0651,0.0516,0.1177,0.0546,0.0434,0.0375,0.0339,0.0284]},"cox":{"n":200000,"events":80728,"terms":[{"term":"Auto-renew billing","hr":0.448,"lo":0.437,"hi":0.458,"p":0.0},{"term":"Prepaid 90d+ plan","hr":0.285,"lo":0.278,"hi":0.293,"p":0.0},{"term":"Converted from free trial","hr":1.742,"lo":1.699,"hi":1.786,"p":0.0},{"term":"Discounted first payment","hr":0.895,"lo":0.755,"hi":1.061,"p":0.2},{"term":"Age 13-24 (vs 25-34)","hr":0.984,"lo":0.961,"hi":1.007,"p":0.18},{"term":"Age 35-44 (vs 25-34)","hr":1.138,"lo":1.099,"hi":1.179,"p":9.3e-13},{"term":"Age 45+ (vs 25-34)","hr":1.088,"lo":1.035,"hi":1.143,"p":0.001},{"term":"Age unknown (vs 25-34)","hr":1.373,"lo":1.322,"hi":1.427,"p":5.4e-59},{"term":"Gender reported","hr":1.233,"lo":1.189,"hi":1.279,"p":1.9e-29},{"term":"Signup channel 7","hr":0.473,"lo":0.46,"hi":0.487,"p":0.0},{"term":"Signup channel 9","hr":0.97,"lo":0.948,"hi":0.991,"p":0.0059},{"term":"Signup channel 3","hr":1.031,"lo":1.006,"hi":1.057,"p":0.015}]},"ret12":{"billing":{"Auto-renew":0.7217,"Manual renewal":0.374},"plan":{"Monthly":0.5756,"Other":0.3676,"Prepaid 90d+":0.7068},"origin":{"Converted from free trial":0.4198,"Direct paid start":0.5942},"price":{"Full price":0.5829},"age_band":{"13-24":0.4147,"25-34":0.5077,"35-44":0.493,"45+":0.5332,"Unknown":0.6522},"overall":0.5834},"trial":{"trials":541518,"converted_45d":54384,"rate":0.1004}},"model":{"cohorts":{"train_feb":{"n":992931,"churn_rate":0.0639},"test_mar":{"n":970960,"churn_rate":0.0899}},"specs":{"A. Profile only":{"n_features":5,"trees":100,"holdout_feb":{"auc":0.7371,"pr_auc":0.1763,"log_loss":0.2133,"brier":0.0561,"mean_pred":0.064,"actual_rate":0.0636},"oot_mar":{"auc":0.7244,"pr_auc":0.2168,"log_loss":0.2793,"brier":0.0774,"mean_pred":0.0646,"actual_rate":0.0899}},"B. + Billing history":{"n_features":27,"trees":315,"holdout_feb":{"auc":0.8971,"pr_auc":0.5731,"log_loss":0.1445,"brier":0.0388,"mean_pred":0.0637,"actual_rate":0.0636},"oot_mar":{"auc":0.8647,"pr_auc":0.5876,"log_loss":0.2067,"brier":0.0548,"mean_pred":0.0629,"actual_rate":0.0899}},"C. + Listening behaviour":{"n_features":48,"trees":265,"holdout_feb":{"auc":0.9026,"pr_auc":0.5955,"log_loss":0.1411,"brier":0.0377,"mean_pred":0.0637,"actual_rate":0.0636},"oot_mar":{"auc":0.8686,"pr_auc":0.5955,"log_loss":0.2044,"brier":0.0543,"mean_pred":0.0636,"actual_rate":0.0899}}},"cal":{"holdout_feb_raw":[{"pred":0.0032,"obs":0.0024,"n":14883},{"pred":0.0062,"obs":0.0062,"n":14882},{"pred":0.0083,"obs":0.0072,"n":14883},{"pred":0.0101,"obs":0.0093,"n":14882},{"pred":0.0125,"obs":0.0133,"n":14882},{"pred":0.0164,"obs":0.0171,"n":14883},{"pred":0.0232,"obs":0.0221,"n":14882},{"pred":0.0368,"obs":0.0381,"n":14870},{"pred":0.0879,"obs":0.0893,"n":14895},{"pred":0.4327,"obs":0.4308,"n":14883}],"oot_mar_raw":[{"pred":0.003,"obs":0.0068,"n":92254},{"pred":0.0059,"obs":0.0141,"n":92254},{"pred":0.0079,"obs":0.0211,"n":92254},{"pred":0.0095,"obs":0.0224,"n":92254},{"pred":0.0115,"obs":0.0283,"n":92254},{"pred":0.0146,"obs":0.0345,"n":92254},{"pred":0.0202,"obs":0.0446,"n":92254},{"pred":0.0323,"obs":0.0586,"n":92254},{"pred":0.0872,"obs":0.1249,"n":92254},{"pred":0.4435,"obs":0.5444,"n":92254}],"oot_mar_recal":[{"pred":0.0074,"obs":0.0068,"n":92254},{"pred":0.0137,"obs":0.0141,"n":92254},{"pred":0.0178,"obs":0.0211,"n":92254},{"pred":0.0209,"obs":0.0224,"n":92254},{"pred":0.0248,"obs":0.0283,"n":92254},{"pred":0.0307,"obs":0.0345,"n":92254},{"pred":0.0412,"obs":0.0446,"n":92254},{"pred":0.0623,"obs":0.0586,"n":92254},{"pred":0.1458,"obs":0.1249,"n":92254},{"pred":0.5287,"obs":0.5444,"n":92254}],"metrics":{"oot_mar_raw":{"auc":0.8686,"pr_auc":0.5955,"log_loss":0.2044,"brier":0.0544,"mean_pred":0.0636,"actual_rate":0.09},"oot_mar_recal":{"auc":0.8686,"pr_auc":0.5955,"log_loss":0.1956,"brier":0.0529,"mean_pred":0.0893,"actual_rate":0.09},"recal_slope":0.91,"recal_intercept":0.385}},"lift":[{"decile":1,"n":97096,"churn_rate":0.544,"lift":6.05,"cum_capture":0.6049},{"decile":2,"n":97096,"churn_rate":0.1246,"lift":1.39,"cum_capture":0.7434},{"decile":3,"n":97096,"churn_rate":0.0587,"lift":0.65,"cum_capture":0.8087},{"decile":4,"n":97096,"churn_rate":0.0448,"lift":0.5,"cum_capture":0.8585},{"decile":5,"n":97096,"churn_rate":0.0346,"lift":0.38,"cum_capture":0.897},{"decile":6,"n":97096,"churn_rate":0.0283,"lift":0.31,"cum_capture":0.9285},{"decile":7,"n":97096,"churn_rate":0.0223,"lift":0.25,"cum_capture":0.9532},{"decile":8,"n":97096,"churn_rate":0.0212,"lift":0.24,"cum_capture":0.9768},{"decile":9,"n":97096,"churn_rate":0.0141,"lift":0.16,"cum_capture":0.9925},{"decile":10,"n":97096,"churn_rate":0.0068,"lift":0.08,"cum_capture":1.0}],"capture":{"1%":0.1087,"2%":0.1934,"5%":0.4063,"10%":0.6049,"20%":0.7434,"30%":0.8087},"shap":[{"feature":"last_auto_renew","mean_abs_shap":0.4407},{"feature":"last_pm","mean_abs_shap":0.2828},{"feature":"last_list_price","mean_abs_shap":0.1805},{"feature":"days_since_first_txn","mean_abs_shap":0.136},{"feature":"share_auto_renew","mean_abs_shap":0.134},{"feature":"days_to_expiry","mean_abs_shap":0.1146},{"feature":"last_is_cancel","mean_abs_shap":0.0967},{"feature":"last_paid","mean_abs_shap":0.0868},{"feature":"days_since_registration","mean_abs_shap":0.0769},{"feature":"days_since_last_active","mean_abs_shap":0.0759},{"feature":"days_since_last_sub","mean_abs_shap":0.0707},{"feature":"days_since_cancel","mean_abs_shap":0.0664},{"feature":"total_paid","mean_abs_shap":0.0625},{"feature":"n_txn","mean_abs_shap":0.0583},{"feature":"n_txn_90d","mean_abs_shap":0.052}]}};
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const pct = (v,d=0) => (v*100).toFixed(d)+'%';
+const NS='http://www.w3.org/2000/svg';
+function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs={}){ const t=el('text',{x,y,...attrs},parent); t.textContent=s; return t; }
+const tip=$('#tip');
+function showTip(html, ev){ tip.innerHTML=html; tip.hidden=false; const w=tip.offsetWidth,h=tip.offsetHeight; let x=ev.clientX+14,y=ev.clientY+14; if(x+w>innerWidth-8)x=ev.clientX-w-14; if(y+h>innerHeight-8)y=ev.clientY-h-14; tip.style.left=x+'px'; tip.style.top=y+'px'; }
+function hideTip(){ tip.hidden=true; }
+const sw = c => `<span class="sw" style="background:${c}"></span>`;
+function lin(d0,d1,r0,r1){ return v => r0+(v-d0)/(d1-d0)*(r1-r0); }
+function frame(host, h, m){ host.innerHTML=''; const w=Math.max(280, host.clientWidth); const svg=el('svg',{width:w,height:h,viewBox:`0 0 ${w} ${h}`,role:'img'},host); return {svg,w,h,iw:w-m.l-m.r,ih:h-m.t-m.b,m}; }
+function gridY(f, ys, y, fmt){ const g=el('g',{},f.svg); ys.forEach(v=>{ el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:y(v),y2:y(v),stroke:css('--rule'),'stroke-width':1},g); txt(g,f.m.l-8,y(v)+4,fmt(v),{'text-anchor':'end'}); }); }
+function axisX(f, xs, x, fmt, label){ const g=el('g',{},f.svg); el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:f.h-f.m.b,y2:f.h-f.m.b,stroke:css('--axis')},g); xs.forEach(v=>txt(g,x(v),f.h-f.m.b+16,fmt(v),{'text-anchor':'middle'})); if(label) txt(g,f.m.l+f.iw/2,f.h-4,label,{'text-anchor':'middle',class:'lbl'}); }
+const pathOf = pts => pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join('');
+
+/* ---------- Kaplan-Meier ---------- */
+const KM_ORDER = {billing:['Auto-renew','Manual renewal'], plan:['Prepaid 90d+','Monthly'], origin:['Direct paid start','Converted from free trial']};
+let kmKey='billing';
+function drawKM(){
+  const host=$('#km'); const segs=D.surv.segments[kmKey]; const names=KM_ORDER[kmKey];
+  const cols=[css('--s1'),css('--s2')], bands=[css('--band1'),css('--band2')];
+  $('#kmLegend').innerHTML = names.map((n,i)=>`<span><i style="background:${cols[i]}"></i>${n} <span class="mono" style="color:var(--muted)">n=${segs[n].n.toLocaleString()}</span></span>`).join('') + `<span><i class="dash"></i>All new subscribers</span>`;
+  const f=frame(host,320,{t:12,r:70,b:38,l:44}); const x=lin(0,540,f.m.l,f.w-f.m.r), y=lin(0,1,f.h-f.m.b,f.m.t);
+  gridY(f,[0,.25,.5,.75,1],y,v=>pct(v)); axisX(f,[0,90,180,270,360,450,540],x,v=>v/30,'Months since first payment');
+  const ov=D.surv.overall; el('path',{d:pathOf(ov.t.map((t,i)=>[x(t),y(ov.s[i])])),fill:'none',stroke:css('--muted'),'stroke-width':1.5,'stroke-dasharray':'4 3'},f.svg);
+  names.forEach((n,i)=>{ const c=segs[n];
+    const up=c.t.map((t,j)=>[x(t),y(c.hi[j])]), dn=c.t.map((t,j)=>[x(t),y(c.lo[j])]).reverse();
+    el('path',{d:pathOf(up.concat(dn))+'Z',fill:bands[i],stroke:'none'},f.svg);
+    el('path',{class:'ln',d:pathOf(c.t.map((t,j)=>[x(t),y(c.s[j])])),fill:'none',stroke:cols[i],'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+    const L=c.t.length-1; el('circle',{cx:x(c.t[L]),cy:y(c.s[L]),r:4,fill:cols[i],stroke:css('--panel'),'stroke-width':2},f.svg);
+    txt(f.svg,x(c.t[L])+8,y(c.s[L])+4,pct(c.s[L]),{class:'lbl-strong'});
+  });
+  // crosshair
+  const vline=el('line',{y1:f.m.t,y2:f.h-f.m.b,stroke:css('--axis'),visibility:'hidden'},f.svg);
+  const hit=el('rect',{x:f.m.l,y:f.m.t,width:f.iw,height:f.ih,fill:'transparent'},f.svg);
+  hit.addEventListener('mousemove',ev=>{ const r=f.svg.getBoundingClientRect(); const mx=ev.clientX-r.left; const t=Math.max(0,Math.min(540,Math.round((mx-f.m.l)/f.iw*18)*30)); vline.setAttribute('x1',x(t)); vline.setAttribute('x2',x(t)); vline.setAttribute('visibility','visible');
+    const rows=names.map((n,i)=>{const c=segs[n]; const j=c.t.indexOf(t); return j<0?'':`${sw(cols[i])}${n}: <b>${pct(c.s[j],1)}</b> <span style="color:var(--muted)">(${pct(c.lo[j],1)}–${pct(c.hi[j],1)})</span>`}).filter(Boolean);
+    showTip(`<b>Month ${t/30}</b><br>${rows.join('<br>')}`,ev); });
+  hit.addEventListener('mouseleave',()=>{vline.setAttribute('visibility','hidden');hideTip();});
+}
+document.querySelectorAll('#kmSeg button').forEach(b=>b.addEventListener('click',()=>{ kmKey=b.dataset.k; document.querySelectorAll('#kmSeg button').forEach(x=>x.setAttribute('aria-pressed',x===b)); drawKM(); }));
+
+/* ---------- hazard ---------- */
+function drawHazard(){
+  const host=$('#hazard'); const A=D.surv.hazard['Auto-renew'], M=D.surv.hazard['Manual renewal'];
+  const f=frame(host,260,{t:14,r:12,b:38,l:44}); const n=A.length; const band=f.iw/n;
+  const y=lin(0,.25,f.h-f.m.b,f.m.t); gridY(f,[0,.05,.1,.15,.2,.25],y,v=>pct(v));
+  const bw=Math.min(12,(band-8)/2), cols=[css('--s1'),css('--s2')];
+  for(let i=0;i<n;i++){ const cx=f.m.l+band*i+band/2;
+    [[A[i],0],[M[i],1]].forEach(([v,k])=>{ const x0=cx+(k?1:-1-bw)+ (k?1:-1)*0; const h=f.h-f.m.b-y(v); const xx=k?cx+1:cx-1-bw;
+      const r=Math.min(4,h); const p=`M${xx},${f.h-f.m.b} V${y(v)+r} q0,-${r} ${r},-${r} h${bw-2*r} q${r},0 ${r},${r} V${f.h-f.m.b}Z`;
+      const bar=el('path',{d:p,fill:cols[k]},f.svg);
+      const hit=el('rect',{x:xx-2,y:f.m.t,width:bw+4,height:f.ih,fill:'transparent'},f.svg);
+      hit.addEventListener('mousemove',ev=>showTip(`<b>Month ${i+1}</b><br>${sw(cols[k])}${k?'Manual renewal':'Auto-renew'}: <b>${pct(v,1)}</b> churn`,ev)); hit.addEventListener('mouseleave',hideTip); });
+    txt(f.svg,cx,f.h-f.m.b+16,i+1,{'text-anchor':'middle'}); }
+  el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:f.h-f.m.b,y2:f.h-f.m.b,stroke:css('--axis')},f.svg);
+  txt(f.svg,f.m.l+f.iw/2,f.h-4,'Month of tenure',{'text-anchor':'middle',class:'lbl'});
+  const pk=M.indexOf(Math.max(...M)); txt(f.svg,f.m.l+band*pk+band/2+bw+6,y(M[pk])+4,pct(M[pk])+' at first expiry',{class:'lbl-strong'});
+}
+
+/* ---------- forest ---------- */
+function drawForest(){
+  const host=$('#forest'); const T=D.surv.cox.terms.filter(t=>t.term!=='Discounted first payment');
+  const lw = host.clientWidth<480 ? 150 : 190;
+  const f=frame(host,30+T.length*26+34,{t:10,r:52,b:34,l:lw});
+  const lg=v=>Math.log(v), x=lin(lg(.25),lg(2),f.m.l,f.w-f.m.r);
+  [.25,.5,1,2].forEach(v=>{ el('line',{x1:x(lg(v)),x2:x(lg(v)),y1:f.m.t,y2:f.h-f.m.b,stroke:v===1?css('--axis'):css('--rule'),'stroke-width':1},f.svg); txt(f.svg,x(lg(v)),f.h-f.m.b+16,v+'×',{'text-anchor':'middle'}); });
+  txt(f.svg,f.m.l+f.iw/2,f.h-4,'Hazard ratio (log scale)',{'text-anchor':'middle',class:'lbl'});
+  T.forEach((t,i)=>{ const yy=f.m.t+14+i*26; const c=t.hr<1?css('--s1'):css('--s2');
+    txt(f.svg,f.m.l-10,yy+4,t.term,{'text-anchor':'end',class:'lbl'});
+    el('line',{x1:x(lg(t.lo)),x2:x(lg(t.hi)),y1:yy,y2:yy,stroke:c,'stroke-width':2,'stroke-linecap':'round'},f.svg);
+    el('circle',{cx:x(lg(t.hr)),cy:yy,r:4.5,fill:c,stroke:css('--panel'),'stroke-width':2},f.svg);
+    txt(f.svg,f.w-f.m.r+8,yy+4,t.hr.toFixed(2),{});
+    const hit=el('rect',{x:0,y:yy-12,width:f.w,height:24,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>${t.term}</b><br>Hazard ratio <b>${t.hr.toFixed(2)}</b> (95% CI ${t.lo.toFixed(2)}–${t.hi.toFixed(2)})<br>${t.hr<1?pct(1-t.hr)+' lower':pct(t.hr-1)+' higher'} churn risk at any point in time`,ev)); hit.addEventListener('mouseleave',hideTip); });
+  $('#coxNote').textContent=`n = ${D.surv.cox.n.toLocaleString()} subscribers, ${D.surv.cox.events.toLocaleString()} churn events. Reference groups: manual renewal, monthly plan, direct paid start, age 25–34, gender not reported, other sign-up channels.`;
+}
+
+/* ---------- gains ---------- */
+function gainsPts(){ const pts=[[0,0]]; D.model.lift.forEach(d=>pts.push([d.decile/10,d.cum_capture])); return pts; }
+function drawGains(id,h,compact){
+  const host=$(id); const f=frame(host,h,{t:12,r:compact?16:20,b:36,l:44}); const x=lin(0,1,f.m.l,f.w-f.m.r), y=lin(0,1,f.h-f.m.b,f.m.t);
+  gridY(f,[0,.25,.5,.75,1],y,v=>pct(v)); axisX(f,[0,.2,.4,.6,.8,1],x,v=>pct(v),'Share of subscribers contacted, riskiest first');
+  el('line',{x1:x(0),y1:y(0),x2:x(1),y2:y(1),stroke:css('--muted'),'stroke-width':1.5,'stroke-dasharray':'4 3'},f.svg);
+  const P=gainsPts(); const c=css('--s1');
+  el('path',{d:pathOf(P.map(p=>[x(p[0]),y(p[1])]))+`L${x(1)},${y(0)}Z`,fill:css('--band1')},f.svg);
+  el('path',{d:pathOf(P.map(p=>[x(p[0]),y(p[1])])),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+  const p10=P[1]; el('circle',{cx:x(p10[0]),cy:y(p10[1]),r:5,fill:c,stroke:css('--panel'),'stroke-width':2},f.svg);
+  txt(f.svg,x(p10[0])+12,y(p10[1])+34,`Top 10% → ${pct(p10[1])} of churners`,{class:'lbl-strong'});
+  P.slice(1).forEach(p=>{ const hit=el('circle',{cx:x(p[0]),cy:y(p[1]),r:12,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`Contact riskiest <b>${pct(p[0])}</b><br>${sw(c)}Finds <b>${pct(p[1],1)}</b> of churners<br><span style="color:var(--muted)">Random: ${pct(p[0])}</span>`,ev)); hit.addEventListener('mouseleave',hideTip); });
+}
+
+/* ---------- calibration ---------- */
+function drawCal(){
+  const host=$('#calib'); const f=frame(host,300,{t:12,r:16,b:40,l:48});
+  const lg=Math.log10, x=lin(lg(.002),lg(1),f.m.l,f.w-f.m.r), y=lin(lg(.002),lg(1),f.h-f.m.b,f.m.t);
+  const ticks=[.003,.01,.03,.1,.3,1];
+  ticks.forEach(v=>{ el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:y(lg(v)),y2:y(lg(v)),stroke:css('--rule')},f.svg); txt(f.svg,f.m.l-8,y(lg(v))+4,pct(v,v<.01?1:0),{'text-anchor':'end'}); });
+  el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:f.h-f.m.b,y2:f.h-f.m.b,stroke:css('--axis')},f.svg);
+  ticks.forEach(v=>txt(f.svg,x(lg(v)),f.h-f.m.b+16,pct(v,v<.01?1:0),{'text-anchor':'middle'}));
+  txt(f.svg,f.m.l+f.iw/2,f.h-4,'Predicted churn rate',{'text-anchor':'middle',class:'lbl'});
+  txt(f.svg,f.m.l+4,f.m.t+10,'Actual',{class:'lbl'});
+  el('line',{x1:x(lg(.002)),y1:y(lg(.002)),x2:x(0),y2:y(0),stroke:css('--muted'),'stroke-width':1.5,'stroke-dasharray':'4 3'},f.svg);
+  [['oot_mar_raw',css('--s2'),'As trained'],['oot_mar_recal',css('--s1'),'Recalibrated']].forEach(([k,c,nm])=>{
+    const R=D.model.cal[k]; const P=R.map(r=>[x(lg(r.pred)),y(lg(r.obs))]);
+    el('path',{d:pathOf(P),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+    R.forEach((r,i)=>{ el('circle',{cx:P[i][0],cy:P[i][1],r:4,fill:c,stroke:css('--panel'),'stroke-width':2},f.svg);
+      const hit=el('circle',{cx:P[i][0],cy:P[i][1],r:11,fill:'transparent'},f.svg);
+      hit.addEventListener('mousemove',ev=>showTip(`<b>Risk group ${i+1} of 10</b><br>${sw(c)}${nm}: predicted <b>${pct(r.pred,1)}</b><br>Actual <b>${pct(r.obs,1)}</b> · n=${r.n.toLocaleString()}`,ev)); hit.addEventListener('mouseleave',hideTip); }); });
+  const mr=D.model.cal.metrics; $('#calNote').textContent=`Churn rose from ${pct(D.model.cohorts.train_feb.churn_rate,1)} in February to ${pct(D.model.cohorts.test_mar.churn_rate,1)} in March. The ranking held (AUC unchanged), but raw predictions averaged ${pct(mr.oot_mar_raw.mean_pred,1)}, under-forecasting the month. Re-fitting two numbers on 5% of March outcomes brings the mean to ${pct(mr.oot_mar_recal.mean_pred,1)} and cuts log loss from ${mr.oot_mar_raw.log_loss} to ${mr.oot_mar_recal.log_loss}.`;
+}
+
+/* ---------- SHAP ---------- */
+const FEAT = {last_auto_renew:'Auto-renew on latest transaction', last_pm:'Payment method', last_list_price:'Plan list price',
+  share_auto_renew:'Share of history on auto-renew', days_since_first_txn:'Paying tenure (days)', days_to_expiry:'Days until membership expires',
+  last_is_cancel:'Latest action was a cancellation', days_since_last_active:'Days since last listened', last_paid:'Amount last paid',
+  total_paid:'Lifetime amount paid', days_since_last_sub:'Days since last payment', days_since_registration:'Days since registration',
+  days_since_cancel:'Days since last cancellation', n_txn_90d:'Transactions, last 90 days', n_txn:'Lifetime transactions'};
+const USAGE = new Set(['days_since_last_active']);
+function drawShap(){
+  const host=$('#shap'); const S=D.model.shap.slice(0,12); const lw=host.clientWidth<480?160:210;
+  const f=frame(host,20+S.length*26+30,{t:6,r:48,b:30,l:lw}); const mx=Math.ceil(S[0].mean_abs_shap*10)/10; const x=lin(0,mx,f.m.l,f.w-f.m.r);
+  [0,mx/2,mx].forEach(v=>{ el('line',{x1:x(v),x2:x(v),y1:f.m.t,y2:f.h-f.m.b,stroke:css('--rule')},f.svg); txt(f.svg,x(v),f.h-f.m.b+16,v.toFixed(2),{'text-anchor':'middle'}); });
+  S.forEach((s,i)=>{ const yy=f.m.t+8+i*26, bh=14, w=x(s.mean_abs_shap)-f.m.l; const c=USAGE.has(s.feature)?css('--s3'):css('--s1'); const r=Math.min(4,w);
+    el('path',{d:`M${f.m.l},${yy} h${w-r} q${r},0 ${r},${r} v${bh-2*r} q0,${r} -${r},${r} h-${w-r}Z`,fill:c},f.svg);
+    txt(f.svg,f.m.l-10,yy+11,FEAT[s.feature]||s.feature,{'text-anchor':'end',class:'lbl'});
+    txt(f.svg,f.m.l+w+6,yy+11,s.mean_abs_shap.toFixed(2),{});
+    const hit=el('rect',{x:0,y:yy-5,width:f.w,height:24,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>${FEAT[s.feature]||s.feature}</b><br>${sw(c)}${USAGE.has(s.feature)?'Listening behaviour':'Billing / account'} · mean |SHAP| <b>${s.mean_abs_shap.toFixed(3)}</b>`,ev)); hit.addEventListener('mouseleave',hideTip); });
+  const lg=document.createElement('div'); lg.className='legend'; lg.innerHTML=`<span><i style="background:var(--s1)"></i>Billing / account</span><span><i style="background:var(--s3)"></i>Listening behaviour</span>`; host.appendChild(lg);
+}
+
+/* ---------- deciles ---------- */
+function drawDeciles(){
+  const host=$('#deciles'); const L=D.model.lift; const f=frame(host,240,{t:22,r:12,b:38,l:44}); const band=f.iw/10, bw=Math.min(24,band-8);
+  const y=lin(0,.6,f.h-f.m.b,f.m.t); gridY(f,[0,.2,.4,.6],y,v=>pct(v));
+  const base=D.model.cohorts.test_mar.churn_rate; const c=css('--s1');
+  L.forEach((d,i)=>{ const cx=f.m.l+band*i+band/2, h=f.h-f.m.b-y(d.churn_rate), r=Math.min(4,h);
+    el('path',{d:`M${cx-bw/2},${f.h-f.m.b} V${y(d.churn_rate)+r} q0,-${r} ${r},-${r} h${bw-2*r} q${r},0 ${r},${r} V${f.h-f.m.b}Z`,fill:c},f.svg);
+    if(i<3) txt(f.svg,cx,y(d.churn_rate)-6,pct(d.churn_rate,1),{'text-anchor':'middle',class:'lbl-strong'});
+    txt(f.svg,cx,f.h-f.m.b+16,d.decile,{'text-anchor':'middle'});
+    const hit=el('rect',{x:cx-band/2,y:f.m.t,width:band,height:f.ih,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>Decile ${d.decile}</b> (${d.decile===1?'riskiest':d.decile===10?'safest':''} 10%)<br>${sw(c)}Churn rate <b>${pct(d.churn_rate,1)}</b> · ${d.lift}× average<br>Cumulative churners found: ${pct(d.cum_capture,1)}`,ev)); hit.addEventListener('mouseleave',hideTip); });
+  el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:y(base),y2:y(base),stroke:css('--muted'),'stroke-dasharray':'4 3'},f.svg);
+  txt(f.svg,f.w-f.m.r,y(base)-6,`March average ${pct(base,1)}`,{'text-anchor':'end',class:'lbl'});
+  el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:f.h-f.m.b,y2:f.h-f.m.b,stroke:css('--axis')},f.svg);
+  txt(f.svg,f.m.l+f.iw/2,f.h-4,'Risk decile (1 = highest predicted risk)',{'text-anchor':'middle',class:'lbl'});
+}
+
+/* ---------- table + findings ---------- */
+function fillSpec(){
+  const S=D.model.specs; let h='<thead><tr><th>Model inputs</th><th>Features</th><th>AUC</th><th>PR-AUC</th><th>Top-decile capture</th></tr></thead><tbody>';
+  const names=Object.keys(S);
+  names.forEach((n,i)=>{ const o=S[n].oot_mar; h+=`<tr class="${i===names.length-1?'final':''}"><td>${n.replace(/^[A-C]\. /,'')}</td><td>${S[n].n_features}</td><td>${o.auc.toFixed(3)}</td><td>${o.pr_auc.toFixed(3)}</td><td>${i===names.length-1?pct(D.model.capture['10%']):'–'}</td></tr>`; });
+  $('#specTbl').innerHTML=h+'</tbody>';
+}
+function fillFindings(){
+  const r=D.surv.ret12, hr=Object.fromEntries(D.surv.cox.terms.map(t=>[t.term,t])), S=D.model.specs;
+  const auB=S['B. + Billing history'].oot_mar.auc, auC=S['C. + Listening behaviour'].oot_mar.auc, auA=S['A. Profile only'].oot_mar.auc;
+  const mH=D.surv.hazard['Manual renewal'];
+  const F=[
+    {k:`${pct(r.billing['Auto-renew'])} <small>vs ${pct(r.billing['Manual renewal'])}</small>`, p:`12-month retention for subscribers who start on auto-renew vs. manual renewal. After adjusting for plan, age and channel, auto-renew still carries <b>${pct(1-hr['Auto-renew billing'].hr)}</b> lower churn hazard.`, so:`<b>Action:</b> make auto-pay the default at sale and price it in, e.g. an enrollment credit.`},
+    {k:`${pct(Math.max(...mH))} <small>in month 2</small>`, p:`Manual-renewal churn is concentrated at the first expiry, then fades. By month 12 the monthly hazard is ${pct(mH[11],1)}.`, so:`<b>Action:</b> put retention spend in the 2 weeks before first expiry, not spread evenly across the base.`},
+    {k:`${pct(D.surv.trial.rate)} <small>trial conversion</small>`, p:`Of ${(D.surv.trial.trials/1000).toFixed(0)}K free trials, about 1 in 10 became paying within 45 days. Those who did churn <b>${hr['Converted from free trial'].hr.toFixed(1)}×</b> faster than direct sign-ups.`, so:`<b>Action:</b> judge trial campaigns on 6-month paid retention, not conversion counts.`},
+    {k:`+${(auC-auB).toFixed(3)} <small>AUC from usage</small>`, p:`Billing history lifts AUC from ${auA.toFixed(2)} to ${auB.toFixed(3)}. Adding 392M rows of daily usage adds only ${(auC-auB).toFixed(3)} more. For one-month-ahead churn, how a customer pays says more than how much they use.`, so:`<b>Action:</b> build billing signals first. Usage feeds earn their cost on longer horizons and engagement products.`},
+    {k:`${pct(D.model.cohorts.train_feb.churn_rate,1)} → ${pct(D.model.cohorts.test_mar.churn_rate,1)}`, p:`Churn jumped between the training and test months. The model's ranking held, but its raw probabilities under-forecast March by roughly 30%, the kind of drift that breaks budget forecasts.`, so:`<b>Action:</b> monitor calibration monthly and refit the intercept on a small labelled sample. It is cheap and fixes the forecast.`},
+  ];
+  $('#findings').innerHTML=F.map(f=>`<div class="finding"><div class="k">${f.k}</div><p>${f.p}</p><div class="so">${f.so}</div></div>`).join('');
+  $('#heroNum').innerHTML=`${pct(D.model.capture['10%'])}<span> of churners</span>`;
+  $('#heroLift').textContent=`${D.model.lift[0].lift.toFixed(1)}×`;
+}
+
+function drawAll(){ drawKM(); drawHazard(); drawForest(); drawGains('#gainsHero',220,true); drawGains('#gains',280); drawCal(); drawShap(); drawDeciles(); }
+fillSpec(); fillFindings(); drawAll();
+let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(drawAll,120);});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawAll);
+new MutationObserver(drawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+document.fonts && document.fonts.ready.then(drawAll);
+</script>
