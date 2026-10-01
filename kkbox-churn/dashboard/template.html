@@ -176,24 +176,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
       <h3>Modeling</h3>
       <p>All model inputs are dated before the month in which the label is decided, which rules out leakage from renewals that have already happened. Validation is out-of-time on the following month rather than a random split, which would overstate accuracy. The model was early-stopped on a 15% in-time holdout. Calibration was corrected by re-estimating intercept and slope on a 5% labelled sample of the new month and evaluated on the remaining 95%. Survival estimates use Kaplan–Meier with Greenwood intervals and a Cox model on a 200K sample stratified by sign-up quarter, with proportionality checked month by month.</p>
     </div>
-    <div>
-      <h3>Processing</h3>
-      <p>The 30 GB daily usage file was streamed into compressed Parquet (4.4 GB) with integer keys on a 2-core, 8 GB machine. Joins and window functions run in DuckDB, and features for about 2 million labelled subscribers build in a few minutes. The pipeline is five scripts and reproduces end to end from the raw download.</p>
-    </div>
   </div>
-  <figure>
-    <figcaption><b>Table 2.</b> Relevance to telecom</figcaption>
-    <div class="tblwrap"><table class="translate">
-      <thead><tr><th>KKBox</th><th>Carrier equivalent</th><th>Finding</th></tr></thead>
-      <tbody>
-        <tr><td>Auto-renew billing</td><td>AutoPay / paperless enrollment</td><td>About half the churn hazard. Enrollment at sale is the strongest retention lever in the data.</td></tr>
-        <tr><td>Prepaid 90–410 day plans</td><td>Term agreements, annual prepay</td><td>About 70% lower hazard while the term runs, with a cliff at term end.</td></tr>
-        <tr><td>Free trial to paid</td><td>Promotional or introductory pricing</td><td>10% of trials convert, and those converts churn 1.7 times faster than direct sign-ups.</td></tr>
-        <tr><td>Manual renewal at expiry</td><td>Promo roll-off, contract end</td><td>Risk is concentrated in a predictable window, so outreach can be timed.</td></tr>
-        <tr><td>Daily listening</td><td>Network usage, data sessions</td><td>Adds little beyond billing history for one-month-ahead churn.</td></tr>
-      </tbody>
-    </table></div>
-  </figure>
 </section>
 
 <footer>
