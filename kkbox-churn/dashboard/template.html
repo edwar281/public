@@ -1,79 +1,58 @@
 <title>KKBox Churn Study</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: single reading column (max 1080px). Executive summary first, then two evidence chapters
-   (survival, prediction), then methods. Charts sit on quiet panels; the data is the only loud thing. */
+/* Layout: a written analytical report. One 920px column, numbered sections, figures and tables
+   separated by hairlines with numbered captions. No cards, no hero. */
 :root{
-  --bg:#f6f7f8; --panel:#ffffff; --ink:#0f1720; --ink-2:#4a5562; --muted:#7b8591;
-  --rule:#e3e6ea; --axis:#c4cad1; --accent:#1d4f91; --accent-soft:#e6eef8;
-  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --good:#006300; --crit:#d03b3b;
+  --bg:#ffffff; --panel:#ffffff; --ink:#1a1d21; --ink-2:#454b53; --muted:#7a8088;
+  --rule:#e4e6e9; --axis:#c3c7cc; --accent:#1f4e8c;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
   --band1:rgba(42,120,214,.12); --band2:rgba(235,104,52,.12);
-  --f-display:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --f-body:"Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0e1116; --panel:#161a20; --ink:#f2f4f7; --ink-2:#b8c0ca; --muted:#8a939e;
-  --rule:#262c34; --axis:#3a424c; --accent:#8db8f0; --accent-soft:#1a2738;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --good:#0ca30c; --crit:#e66767;
+  --bg:#121417; --panel:#121417; --ink:#eceef0; --ink-2:#b9bec5; --muted:#8a9099;
+  --rule:#2a2e34; --axis:#3d434a; --accent:#8db8f0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
   --band1:rgba(57,135,229,.18); --band2:rgba(217,89,38,.18); color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0e1116; --panel:#161a20; --ink:#f2f4f7; --ink-2:#b8c0ca; --muted:#8a939e;
-  --rule:#262c34; --axis:#3a424c; --accent:#8db8f0; --accent-soft:#1a2738;
-  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --good:#0ca30c; --crit:#e66767;
+  --bg:#121417; --panel:#121417; --ink:#eceef0; --ink-2:#b9bec5; --muted:#8a9099;
+  --rule:#2a2e34; --axis:#3d434a; --accent:#8db8f0;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70;
   --band1:rgba(57,135,229,.18); --band2:rgba(217,89,38,.18); color-scheme:dark}
 
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
-.wrap{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:grid;gap:56px}
-h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
-h1{font-size:clamp(30px,5vw,46px);line-height:1.08;font-weight:700}
-h2{font-size:clamp(22px,3vw,28px);line-height:1.2;font-weight:650}
-h3{font-size:17px;font-weight:600;line-height:1.3}
-p{margin:0;max-width:68ch}
-.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.mono{font-family:var(--f-mono)}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;margin:0}
+.wrap{max-width:920px;margin:0 auto;padding-inline:20px;padding-block:48px 64px;display:grid;gap:48px}
+h1,h2,h3{text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:clamp(28px,4.4vw,38px);line-height:1.15;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.25;padding-top:8px;border-top:2px solid var(--ink)}
+h2 .n{color:var(--muted);font-weight:500;margin-right:10px}
+h3{font-size:16px;line-height:1.35}
+p{margin:0;max-width:72ch}
 a{color:var(--accent)}
 a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-/* header */
-header{display:grid;gap:18px}
-.byline{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;color:var(--ink-2);font-size:15px}
-.byline strong{color:var(--ink);font-weight:600}
-.lede{font-size:18px;color:var(--ink-2);max-width:62ch}
-.scale{display:flex;flex-wrap:wrap;gap:8px}
-.chip{font-family:var(--f-mono);font-size:12.5px;padding:5px 10px;border:1px solid var(--rule);border-radius:999px;background:var(--panel);color:var(--ink-2)}
-.chip b{color:var(--ink);font-weight:500}
+header{display:grid;gap:14px}
+.subtitle{font-size:19px;color:var(--ink-2);line-height:1.4}
+.byline{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14.5px;color:var(--ink-2);padding-block:10px;border-block:1px solid var(--rule)}
+.byline b{color:var(--ink);font-weight:600}
+section{display:grid;gap:22px}
+.prose{display:grid;gap:14px}
+.prose p{color:var(--ink-2)}
+ol.findings{margin:0;padding-left:22px;display:grid;gap:14px;max-width:76ch}
+ol.findings li{color:var(--ink-2);padding-left:4px}
+ol.findings li b{color:var(--ink);font-weight:600}
 
-/* hero result */
-.hero{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:28px;align-items:center;background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:28px}
-.hero .num{font-size:clamp(56px,9vw,88px);font-weight:700;line-height:1;letter-spacing:-.03em;font-family:var(--f-display)}
-.hero .num span{color:var(--muted);font-weight:500;font-size:.45em;letter-spacing:0}
-.hero p{color:var(--ink-2)}
-@media (max-width:760px){.hero{grid-template-columns:1fr}}
-
-/* findings */
-.findings{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
-.finding{background:var(--panel);padding:22px;display:grid;gap:10px;align-content:start;min-width:0;grid-column:span 2}
-.finding:nth-child(n+4){grid-column:span 3}
-@media (max-width:860px){.findings{grid-template-columns:1fr}.finding,.finding:nth-child(n+4){grid-column:auto}}
-.finding .k{font-size:30px;font-weight:700;letter-spacing:-.02em;font-family:var(--f-display);line-height:1.1}
-.finding .k small{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0}
-.finding p{font-size:15px;color:var(--ink-2)}
-.finding .so{font-size:14px;color:var(--ink);border-top:1px solid var(--rule);padding-top:10px}
-.finding .so b{font-weight:600}
-
-/* chapter */
-section.chapter{display:grid;gap:24px}
-.chapter-head{display:grid;gap:10px}
-.chapter-head p{color:var(--ink-2)}
-.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
-@media (max-width:860px){.grid2{grid-template-columns:1fr}}
-.panel{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:20px;display:grid;gap:12px;min-width:0;align-content:start}
-.panel .sub{font-size:14px;color:var(--ink-2)}
-.panel .note{font-size:13px;color:var(--muted)}
+figure{margin:0;display:grid;gap:10px;min-width:0;padding-top:14px;border-top:1px solid var(--rule)}
+figcaption{font-size:14px;color:var(--ink-2);max-width:80ch}
+figcaption b{color:var(--ink);font-weight:600}
+.fignote{font-size:13px;color:var(--muted);max-width:80ch}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
 .chart{width:100%;min-height:260px;position:relative}
 .chart svg{display:block;width:100%;overflow:visible}
 .chart text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
@@ -82,188 +61,145 @@ section.chapter{display:grid;gap:24px}
 .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2)}
 .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
 .legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)!important}
-.seg{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--rule);border-radius:999px;background:var(--bg);flex-wrap:wrap}
-.seg button{font:inherit;font-size:13px;border:0;background:transparent;color:var(--ink-2);padding:5px 12px;border-radius:999px;cursor:pointer}
-.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--rule)}
-.row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center}
+.mono{font-family:var(--f-mono)}
+.seg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--muted);align-items:baseline}
+.seg button{font:inherit;border:0;background:none;padding:2px 0;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent}
+.seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
 
 table{border-collapse:collapse;width:100%;font-size:14px}
-th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums}
-th:first-child,td:first-child{text-align:left}
-th{font-weight:600;color:var(--ink-2);font-size:12.5px}
-td.mono{font-family:var(--f-mono);font-size:13px}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;vertical-align:top}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+thead th{font-weight:600;color:var(--ink);border-bottom:1px solid var(--ink)}
 tr.final td{font-weight:600}
 .tblwrap{overflow-x:auto}
-
-.methods{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
-.methods .panel p,.methods .panel li{font-size:14.5px;color:var(--ink-2)}
-.methods ul{margin:0;padding-left:18px;display:grid;gap:6px}
 .translate td,.translate th{text-align:left}
-footer{display:grid;gap:8px;border-top:1px solid var(--rule);padding-top:20px;color:var(--muted);font-size:13.5px}
+.methods{display:grid;gap:18px}
+.methods h3{margin-bottom:4px}
+.methods p{color:var(--ink-2);font-size:15px}
+footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;color:var(--muted);font-size:13.5px}
 
-#tip{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--rule);box-shadow:0 6px 24px rgba(0,0,0,.12);border-radius:8px;padding:8px 10px;font-size:12.5px;line-height:1.45;z-index:10;max-width:260px}
+#tip{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--rule);box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:4px;padding:7px 9px;font-size:12.5px;line-height:1.45;z-index:10;max-width:260px}
 #tip b{font-weight:600}
 #tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:baseline}
-@media (prefers-reduced-motion:no-preference){.chart path.ln{transition:opacity .2s}}
 </style>
 
 <div class="wrap">
 <header>
-  <div class="eyebrow">Portfolio case study · Subscription churn</div>
-  <h1>Who leaves, and when: churn across 6.8 million subscribers</h1>
-  <div class="byline"><strong>Will Edwards, PhD</strong><a id="repo" href="https://github.com/edwar281/public/tree/main/kkbox-churn">Code on GitHub</a></div>
-  <p class="lede">A subscription business loses customers at renewal. Using public data from KKBox, a large Asian music-streaming service with carrier-style billing, this analysis examines predictors of churn and how well we can predict next month's churners.</p>
-  <div class="scale" aria-label="Data scale">
-    <span class="chip"><b>392M</b> daily usage rows</span>
-    <span class="chip"><b>23M</b> billing transactions</span>
-    <span class="chip"><b>6.8M</b> member profiles</span>
-    <span class="chip"><b>564K</b> new paid subscribers tracked over time</span>
-    <span class="chip"><b>1.96M</b> labelled renewal decisions</span>
+  <h1>Subscription Churn at Scale</h1>
+  <p class="subtitle">Survival analysis and one-month-ahead churn prediction for 6.8 million subscribers</p>
+  <div class="byline"><span><b>Will Edwards, PhD</b></span><span>October 2026</span><a id="repo" href="https://github.com/edwar281/public/tree/main/kkbox-churn">Code on GitHub</a></div>
+  <div class="prose">
+    <p>A subscription business loses customers at renewal. Using public data from KKBox, a large Asian music-streaming service with carrier-style billing, this analysis examines predictors of churn and how well we can predict next month's churners.</p>
+    <p>The data cover 2015 to 2017: 392 million daily usage records, 23 million billing transactions and 6.8 million member profiles. Two questions drive the work. When in the customer lifecycle do new subscribers leave, and what changes that timing? And using only what is known before a month begins, how many of that month's churners can be identified?</p>
   </div>
 </header>
 
-<section class="hero" aria-label="Headline result">
-  <div style="display:grid;gap:12px">
-    <div class="eyebrow">Headline result · out-of-time test, March 2017</div>
-    <div class="num" id="heroNum">61%<span> of churners</span></div>
-    <p>were among the <b>10% of subscribers</b> the model ranked riskiest, scored before the month began. That is <b id="heroLift">6.1×</b> better than random targeting, so a retention team can reach most at-risk customers while contacting a small fraction of the base.</p>
-  </div>
-  <div class="chart" id="gainsHero" style="min-height:220px"></div>
+<section aria-labelledby="sum">
+  <h2 id="sum">Summary</h2>
+  <ol class="findings" id="findings"></ol>
 </section>
 
-<section class="chapter" aria-labelledby="take">
-  <div class="chapter-head">
-    <div class="eyebrow">Executive summary</div>
-    <h2 id="take">Five findings and what I would do about them</h2>
+<section aria-labelledby="ch1">
+  <h2 id="ch1"><span class="n">1</span>When do new subscribers churn?</h2>
+  <div class="prose">
+    <p>The cohort is every new paying subscriber who joined between March 2015 and December 2016 (564K people), followed until they churned or the data ended. Subscribers still active at the end are treated as censored rather than retained, so recent sign-ups do not inflate retention.</p>
   </div>
-  <div class="findings" id="findings"></div>
-</section>
-
-<section class="chapter" aria-labelledby="ch1">
-  <div class="chapter-head">
-    <div class="eyebrow">Chapter 1 · Survival analysis</div>
-    <h2 id="ch1">When do new subscribers leave?</h2>
-    <p>I followed every genuinely new paying subscriber who joined between March 2015 and December 2016 until they churned or the data ended. Customers still active at the end are counted as censored, not as retained, so later sign-ups don't flatter the numbers.</p>
-  </div>
-  <div class="panel">
-    <div class="row">
-      <h3>Share of subscribers still active, by months since first payment</h3>
-      <div class="seg" role="group" aria-label="Split survival curve by" id="kmSeg">
-        <button type="button" aria-pressed="true" data-k="billing">Billing</button>
-        <button type="button" aria-pressed="false" data-k="plan">Plan length</button>
-        <button type="button" aria-pressed="false" data-k="origin">Acquisition</button>
-      </div>
+  <figure>
+    <figcaption><b>Figure 1.</b> Share of new subscribers still active, by months since first payment</figcaption>
+    <div class="seg" role="group" aria-label="Split survival curve by" id="kmSeg"><span>Split by:</span>
+      <button type="button" aria-pressed="true" data-k="billing">billing type</button>
+      <button type="button" aria-pressed="false" data-k="plan">plan length</button>
+      <button type="button" aria-pressed="false" data-k="origin">acquisition source</button>
     </div>
     <div class="legend" id="kmLegend"></div>
     <div class="chart" id="km" style="min-height:320px"></div>
-    <div class="note">Kaplan–Meier estimates with 95% confidence bands (Greenwood). Bands are narrower than the lines at this sample size. Curves stop where fewer than 200 subscribers remain at risk.</div>
-  </div>
+    <div class="fignote">Kaplan–Meier estimates with 95% Greenwood confidence bands, which are narrower than the lines at this sample size. Curves end where fewer than 200 subscribers remain at risk.</div>
+  </figure>
   <div class="grid2">
-    <div class="panel">
-      <h3>Monthly churn hazard by billing type</h3>
-      <div class="sub">Probability of churning in a month, given the subscriber made it that far</div>
+    <figure>
+      <figcaption><b>Figure 2.</b> Monthly churn hazard by billing type: the probability of churning in a given month among subscribers still active at its start</figcaption>
       <div class="legend"><span><i style="background:var(--s1)"></i>Auto-renew</span><span><i style="background:var(--s2)"></i>Manual renewal</span></div>
       <div class="chart" id="hazard"></div>
-      <div class="note">Manual-renewal risk spikes at the first expiry and again near month 7, when 180-day plans run out. Auto-renew risk stays low and flat. Because the hazards are not proportional, a single hazard ratio averages over very different months.</div>
-    </div>
-    <div class="panel">
-      <h3>What changes churn risk: Cox model hazard ratios</h3>
-      <div class="sub">Below 1 = lower risk. Each factor is adjusted for all the others; stratified by sign-up quarter</div>
+      <div class="fignote">Manual-renewal risk spikes at the first expiry and again near month 7, when 180-day plans end. Auto-renew risk stays low and flat. Because the hazards are not proportional, the Cox estimate in Figure 3 is an average over very different months.</div>
+    </figure>
+    <figure>
+      <figcaption><b>Figure 3.</b> Cox proportional-hazards model: hazard ratios with 95% confidence intervals, stratified by sign-up quarter</figcaption>
       <div class="chart" id="forest" style="min-height:360px"></div>
-      <div class="note" id="coxNote"></div>
-    </div>
+      <div class="fignote" id="coxNote"></div>
+    </figure>
   </div>
 </section>
 
-<section class="chapter" aria-labelledby="ch2">
-  <div class="chapter-head">
-    <div class="eyebrow">Chapter 2 · Predictive model</div>
-    <h2 id="ch2">Can we find next month's churners in advance?</h2>
-    <p>I trained a gradient-boosted model on 993K subscribers whose memberships expired in February 2017, using only information available before February began. I then tested it, untouched, on 971K subscribers expiring in March. This is how the model would actually be used: trained on last month, scored on next month.</p>
+<section aria-labelledby="ch2">
+  <h2 id="ch2"><span class="n">2</span>Predicting next month's churners</h2>
+  <div class="prose">
+    <p>A gradient-boosted model (LightGBM) was trained on 993K subscribers whose memberships expired in February 2017, using only information dated before February 1. It was then scored, without retraining, on 971K subscribers expiring in March. This mirrors production use: fit on last month, score next month.</p>
   </div>
   <div class="grid2">
-    <div class="panel">
-      <h3>Where the predictive signal comes from</h3>
-      <div class="sub">Each row adds a data source. Scores are on the March out-of-time test</div>
+    <figure>
+      <figcaption><b>Table 1.</b> Out-of-time performance (March 2017) as each data source is added</figcaption>
       <div class="tblwrap"><table id="specTbl"></table></div>
-      <div class="note">AUC: chance a random churner is ranked above a random stayer (0.5 = coin flip). PR-AUC accounts for churners being rare; the March base rate is 9.0%.</div>
-    </div>
-    <div class="panel">
-      <h3>Churners found vs. share of base contacted</h3>
+      <div class="fignote">AUC is the probability that a random churner is ranked above a random non-churner (0.5 is chance). PR-AUC reflects performance on the rare class; the March base rate is 9.0%.</div>
+    </figure>
+    <figure>
+      <figcaption><b>Figure 4.</b> Cumulative share of churners captured vs. share of subscribers contacted, riskiest first</figcaption>
       <div class="legend"><span><i style="background:var(--s1)"></i>Model ranking</span><span><i class="dash"></i>Random targeting</span></div>
       <div class="chart" id="gains"></div>
-    </div>
+    </figure>
   </div>
   <div class="grid2">
-    <div class="panel">
-      <h3>Calibration: predicted vs. actual churn rate</h3>
-      <div class="sub">March test set, ten equal-size risk groups (log scale)</div>
-      <div class="legend"><span><i style="background:var(--s2)"></i>As trained (February)</span><span><i style="background:var(--s1)"></i>After monthly recalibration</span><span><i class="dash"></i>Perfect calibration</span></div>
+    <figure>
+      <figcaption><b>Figure 5.</b> Calibration on the March test set: predicted vs. observed churn rate in ten equal-size risk groups (log scale)</figcaption>
+      <div class="legend"><span><i style="background:var(--s2)"></i>As trained (February)</span><span><i style="background:var(--s1)"></i>After recalibration</span><span><i class="dash"></i>Perfect calibration</span></div>
       <div class="chart" id="calib" style="min-height:300px"></div>
-      <div class="note" id="calNote"></div>
-    </div>
-    <div class="panel">
-      <h3>Strongest drivers of predicted risk</h3>
-      <div class="sub">Mean absolute SHAP contribution (log-odds), 20K March subscribers</div>
+      <div class="fignote" id="calNote"></div>
+    </figure>
+    <figure>
+      <figcaption><b>Figure 6.</b> Features with the largest influence on predicted risk: mean absolute SHAP value (log-odds) across 20K March subscribers</figcaption>
       <div class="chart" id="shap" style="min-height:360px"></div>
-    </div>
+    </figure>
   </div>
-  <div class="panel">
-    <h3>Churn rate by risk decile, March test set</h3>
+  <figure>
+    <figcaption><b>Figure 7.</b> Observed churn rate by predicted-risk decile, March 2017</figcaption>
     <div class="chart" id="deciles" style="min-height:240px"></div>
-  </div>
+  </figure>
 </section>
 
-<section class="chapter" aria-labelledby="meth" id="methods">
-  <div class="chapter-head">
-    <div class="eyebrow">Methods &amp; data</div>
-    <h2 id="meth">How this was built</h2>
-  </div>
+<section aria-labelledby="meth" id="methods">
+  <h2 id="meth"><span class="n">3</span>Data and methods</h2>
   <div class="methods">
-    <div class="panel">
+    <div>
       <h3>Data and definitions</h3>
-      <ul>
-        <li>Source: WSDM-KKBox Churn Prediction Challenge (Kaggle), released by KKBox for research. Member IDs are anonymized.</li>
-        <li>Churn follows the company's own rule: no new paid subscription within 30 days of the membership expiring. Cancelling pulls the expiry date forward.</li>
-        <li>New-subscriber cohort: registered in 2015 or later, first paid transaction between Mar 2015 and Dec 2016. Requiring two months of history before the first payment avoids mistaking returning members for new ones (left truncation).</li>
-      </ul>
+      <p>The source is the WSDM-KKBox Churn Prediction Challenge on Kaggle, released by KKBox for research with anonymized member IDs. Churn follows the company's own rule: no new paid subscription within 30 days of the membership expiring, with cancellations moving the expiry date forward. The survival cohort includes members registered in 2015 or later whose first paid transaction falls between March 2015 and December 2016. Requiring two months of prior history avoids mistaking a returning member for a new one.</p>
     </div>
-    <div class="panel">
-      <h3>Modelling choices</h3>
-      <ul>
-        <li>Point-in-time features: every input is dated before the month in which the label is decided. That rules out leakage from a renewal that has already happened.</li>
-        <li>Out-of-time test on the following month, rather than a random split, which would overstate accuracy.</li>
-        <li>LightGBM, early-stopped on a 15% in-time holdout. Calibration repaired by re-estimating the intercept and slope on a 5% labelled slice of the new month, then evaluated on the other 95%.</li>
-        <li>Survival: Kaplan–Meier with Greenwood bands; Cox proportional hazards on a 200K sample, stratified by sign-up quarter; non-proportionality checked with month-by-month hazards.</li>
-      </ul>
+    <div>
+      <h3>Modeling</h3>
+      <p>All model inputs are dated before the month in which the label is decided, which rules out leakage from renewals that have already happened. Validation is out-of-time on the following month rather than a random split, which would overstate accuracy. The model was early-stopped on a 15% in-time holdout. Calibration was corrected by re-estimating intercept and slope on a 5% labelled sample of the new month and evaluated on the remaining 95%. Survival estimates use Kaplan–Meier with Greenwood intervals and a Cox model on a 200K sample stratified by sign-up quarter, with proportionality checked month by month.</p>
     </div>
-    <div class="panel">
-      <h3>Engineering at scale</h3>
-      <ul>
-        <li>A 30 GB CSV of daily listening logs, streamed into compressed Parquet (4.4 GB) with integer keys, on a 2-core, 8 GB machine.</li>
-        <li>DuckDB for all joins and window functions; features for about 2M labelled subscribers built in a few minutes.</li>
-        <li>Fully reproducible pipeline: download, then spells, survival, features and model as five scripts.</li>
-      </ul>
+    <div>
+      <h3>Processing</h3>
+      <p>The 30 GB daily usage file was streamed into compressed Parquet (4.4 GB) with integer keys on a 2-core, 8 GB machine. Joins and window functions run in DuckDB, and features for about 2 million labelled subscribers build in a few minutes. The pipeline is five scripts and reproduces end to end from the raw download.</p>
     </div>
   </div>
-  <div class="panel">
-    <h3>Reading this as a telecom operator</h3>
+  <figure>
+    <figcaption><b>Table 2.</b> Relevance to telecom</figcaption>
     <div class="tblwrap"><table class="translate">
-      <thead><tr><th>KKBox</th><th>Carrier equivalent</th><th>What the analysis says</th></tr></thead>
+      <thead><tr><th>KKBox</th><th>Carrier equivalent</th><th>Finding</th></tr></thead>
       <tbody>
         <tr><td>Auto-renew billing</td><td>AutoPay / paperless enrollment</td><td>About half the churn hazard. Enrollment at sale is the strongest retention lever in the data.</td></tr>
-        <tr><td>Prepaid 90–410 day plans</td><td>Term agreements, annual prepay</td><td>About 70% lower hazard while the term runs. Watch the cliff at term end.</td></tr>
-        <tr><td>Free trial → paid</td><td>Promotional or introductory pricing</td><td>Only 10% of trials convert, and converts churn 1.7× faster than direct sign-ups.</td></tr>
-        <tr><td>Manual renewal at expiry</td><td>Promo roll-off, contract end</td><td>Risk is concentrated in a predictable window, so outreach can be scheduled.</td></tr>
-        <tr><td>Daily listening</td><td>Network usage, data sessions</td><td>Adds little beyond billing signals for one-month-ahead churn.</td></tr>
+        <tr><td>Prepaid 90–410 day plans</td><td>Term agreements, annual prepay</td><td>About 70% lower hazard while the term runs, with a cliff at term end.</td></tr>
+        <tr><td>Free trial to paid</td><td>Promotional or introductory pricing</td><td>10% of trials convert, and those converts churn 1.7 times faster than direct sign-ups.</td></tr>
+        <tr><td>Manual renewal at expiry</td><td>Promo roll-off, contract end</td><td>Risk is concentrated in a predictable window, so outreach can be timed.</td></tr>
+        <tr><td>Daily listening</td><td>Network usage, data sessions</td><td>Adds little beyond billing history for one-month-ahead churn.</td></tr>
       </tbody>
     </table></div>
-  </div>
+  </figure>
 </section>
 
 <footer>
-  <div>Data: WSDM-KKBox's Churn Prediction Challenge, Kaggle (KKBox, 2017). Analysis and dashboard by Will Edwards. KKBox has no affiliation with this work.</div>
-  <div>Limitations: one service, 2015–2017. The model is evaluated on one out-of-time month. Effects are associations, not randomized treatment effects; for example, auto-renew customers may differ in commitment before they enroll.</div>
+  <div>Data: WSDM-KKBox's Churn Prediction Challenge, Kaggle (KKBox, 2017). KKBox is not affiliated with this work.</div>
+  <div>Limitations: one service, 2015–2017; the model is evaluated on a single out-of-time month; effects are associations, not randomized treatment effects (auto-renew customers may differ in commitment before they enroll).</div>
+  <div>Analysis by Will Edwards. Assisted by Claude.</div>
 </footer>
 </div>
 <div id="tip" hidden></div>
@@ -431,20 +367,19 @@ function fillSpec(){
 function fillFindings(){
   const r=D.surv.ret12, hr=Object.fromEntries(D.surv.cox.terms.map(t=>[t.term,t])), S=D.model.specs;
   const auB=S['B. + Billing history'].oot_mar.auc, auC=S['C. + Listening behaviour'].oot_mar.auc, auA=S['A. Profile only'].oot_mar.auc;
-  const mH=D.surv.hazard['Manual renewal'];
+  const mH=D.surv.hazard['Manual renewal'], cap=D.model.capture['10%'], lift=D.model.lift[0].lift;
   const F=[
-    {k:`${pct(r.billing['Auto-renew'])} <small>vs ${pct(r.billing['Manual renewal'])}</small>`, p:`12-month retention for subscribers who start on auto-renew vs. manual renewal. After adjusting for plan, age and channel, auto-renew still carries <b>${pct(1-hr['Auto-renew billing'].hr)}</b> lower churn hazard.`, so:`<b>Action:</b> make auto-pay the default at sale and price it in, e.g. an enrollment credit.`},
-    {k:`${pct(Math.max(...mH))} <small>in month 2</small>`, p:`Manual-renewal churn is concentrated at the first expiry, then fades. By month 12 the monthly hazard is ${pct(mH[11],1)}.`, so:`<b>Action:</b> put retention spend in the 2 weeks before first expiry, not spread evenly across the base.`},
-    {k:`${pct(D.surv.trial.rate)} <small>trial conversion</small>`, p:`Of ${(D.surv.trial.trials/1000).toFixed(0)}K free trials, about 1 in 10 became paying within 45 days. Those who did churn <b>${hr['Converted from free trial'].hr.toFixed(1)}×</b> faster than direct sign-ups.`, so:`<b>Action:</b> judge trial campaigns on 6-month paid retention, not conversion counts.`},
-    {k:`+${(auC-auB).toFixed(3)} <small>AUC from usage</small>`, p:`Billing history lifts AUC from ${auA.toFixed(2)} to ${auB.toFixed(3)}. Adding 392M rows of daily usage adds only ${(auC-auB).toFixed(3)} more. For one-month-ahead churn, how a customer pays says more than how much they use.`, so:`<b>Action:</b> build billing signals first. Usage feeds earn their cost on longer horizons and engagement products.`},
-    {k:`${pct(D.model.cohorts.train_feb.churn_rate,1)} → ${pct(D.model.cohorts.test_mar.churn_rate,1)}`, p:`Churn jumped between the training and test months. The model's ranking held, but its raw probabilities under-forecast March by roughly 30%, the kind of drift that breaks budget forecasts.`, so:`<b>Action:</b> monitor calibration monthly and refit the intercept on a small labelled sample. It is cheap and fixes the forecast.`},
+    `<b>Next month's churners can be found early.</b> Scored before the month began, the 10% of subscribers ranked riskiest contained ${pct(cap)} of March's churners, ${Math.round(lift)} times the rate of random selection. A retention team can reach most at-risk customers by contacting a small part of the base.`,
+    `<b>Billing setup is the strongest predictor of retention.</b> ${pct(r.billing['Auto-renew'])} of new subscribers who started on auto-renew were still active after 12 months, compared with ${pct(r.billing['Manual renewal'])} on manual renewal. Adjusted for plan, age and sign-up channel, auto-renew carries a ${pct(1-hr['Auto-renew billing'].hr)} lower churn hazard. Making automatic payment the default at sale is the clearest lever.`,
+    `<b>Churn risk is concentrated at the first renewal.</b> Among manual-renewal subscribers, ${pct(Math.max(...mH))} churn in month 2, when the first plan expires. By month 12 the monthly rate is ${pct(mH[11],1)}. Retention spending works best in the weeks before first expiry.`,
+    `<b>Free trials convert poorly and retain worse.</b> About ${pct(D.surv.trial.rate)} of ${(D.surv.trial.trials/1000).toFixed(0)}K free trials became paying subscribers within 45 days, and those who converted churned ${hr['Converted from free trial'].hr.toFixed(1)} times as fast as direct sign-ups. Trial campaigns should be judged on paid retention, not conversion counts.`,
+    `<b>Usage data adds little to billing data.</b> Billing history raises out-of-time AUC from ${auA.toFixed(2)} to ${auB.toFixed(3)}, while 392 million rows of daily usage add only ${(auC-auB).toFixed(3)} more. For one-month-ahead churn, how a customer pays matters more than how much they use the service.`,
+    `<b>Calibration drifts even when ranking holds.</b> The churn rate rose from ${pct(D.model.cohorts.train_feb.churn_rate,1)} in February to ${pct(D.model.cohorts.test_mar.churn_rate,1)} in March. The model ranked customers just as well, but its raw probabilities under-forecast March by roughly 30%. A monthly recalibration on a small labelled sample corrects it.`,
   ];
-  $('#findings').innerHTML=F.map(f=>`<div class="finding"><div class="k">${f.k}</div><p>${f.p}</p><div class="so">${f.so}</div></div>`).join('');
-  $('#heroNum').innerHTML=`${pct(D.model.capture['10%'])}<span> of churners</span>`;
-  $('#heroLift').textContent=`${D.model.lift[0].lift.toFixed(1)}×`;
+  $('#findings').innerHTML=F.map(f=>`<li>${f}</li>`).join('');
 }
 
-function drawAll(){ drawKM(); drawHazard(); drawForest(); drawGains('#gainsHero',220,true); drawGains('#gains',280); drawCal(); drawShap(); drawDeciles(); }
+function drawAll(){ drawKM(); drawHazard(); drawForest(); drawGains('#gains',280); drawCal(); drawShap(); drawDeciles(); }
 fillSpec(); fillFindings(); drawAll();
 let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(drawAll,120);});
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawAll);

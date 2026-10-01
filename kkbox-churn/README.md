@@ -1,9 +1,9 @@
-# Who leaves, and when: subscription churn at scale
+# Subscription Churn at Scale
 
 Survival analysis and an out-of-time churn model on the public **WSDM-KKBox Churn Prediction** data:
 6.8M member profiles, 23M billing transactions and 392M rows of daily usage logs.
 
-**Author:** Will Edwards, PhD · Analytics & Data Science
+**Author:** Will Edwards, PhD. Assisted by Claude.
 
 **[View the live dashboard →](https://edwar281.github.io/public/kkbox-churn/dashboard/)**  
 (Or open `dashboard/index.html` locally; it is self-contained.)
