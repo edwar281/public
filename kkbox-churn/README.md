@@ -5,7 +5,8 @@ Survival analysis and an out-of-time churn model on the public **WSDM-KKBox Chur
 
 **Author:** Will Edwards, PhD · Analytics & Data Science
 
-**Interactive dashboard:** open `dashboard/index.html` in a browser (self-contained, no server needed).
+**[View the live dashboard →](https://edwar281.github.io/public/kkbox-churn/dashboard/)**  
+(Or open `dashboard/index.html` locally; it is self-contained.)
 
 ## Headline results
 
