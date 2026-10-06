@@ -120,6 +120,12 @@ h1 { font: 500 clamp(2.2rem, 5vw, 3.4rem)/1.08 var(--f-display); letter-spacing:
 .diagram img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
 .diagram figcaption { font-size: 0.85rem; color: var(--ink-soft); }
 .case .lede { font-size: 1.08rem; max-width: 64ch; }
+.case.has-fig { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); column-gap: 36px; grid-template-areas: "head head" "fig lede" "fig pao" "tags tags"; align-items: start; }
+.case.has-fig > header { grid-area: head; }
+.case.has-fig > .diagram { grid-area: fig; margin: 0; }
+.case.has-fig > .lede { grid-area: lede; }
+.case.has-fig > .pao { grid-area: pao; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 0; border-top: 0; }
+.case.has-fig > .tags { grid-area: tags; }
 .pao { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; margin: 0; padding-top: 18px; border-top: 1px solid var(--rule); }
 .pao div { min-width: 0; }
 .pao dt { font: 500 0.72rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft); margin-bottom: 10px; }
@@ -199,4 +205,8 @@ h1 { font: 500 clamp(2.2rem, 5vw, 3.4rem)/1.08 var(--f-display); letter-spacing:
   .figures { grid-template-columns: minmax(0, 1fr); }
   .figures div:nth-child(even) { border-left: 0; }
   .figures div + div { border-top: 1px solid var(--rule); }
+}
+@media (max-width: 900px) {
+  .case.has-fig { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "lede" "fig" "pao" "tags"; }
+  .case.has-fig > .pao { gap: 20px; }
 }
