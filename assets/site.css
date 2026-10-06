@@ -79,6 +79,7 @@ h1 { font: 500 clamp(2.2rem, 5vw, 3.4rem)/1.08 var(--f-display); letter-spacing:
 /* Capability pillars */
 .pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
 .pillar { background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; padding: 24px; display: grid; gap: 10px; align-content: start; }
+.pillar .ico { color: var(--accent); margin-bottom: 4px; }
 .pillar .num { font: 500 0.75rem/1 var(--f-mono); color: var(--accent); letter-spacing: 0.1em; }
 .pillar h3 { font: 500 1.3rem/1.25 var(--f-display); }
 .pillar p { font-size: 0.95rem; color: var(--ink-soft); }
