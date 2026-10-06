@@ -220,3 +220,5 @@ h1 { font: 500 clamp(2.2rem, 5vw, 3.4rem)/1.08 var(--f-display); letter-spacing:
 @media (max-width: 900px) { .thread-row { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
 main > .page-intro.tight { margin-bottom: 0; }
 main > .page-intro.tight + section { margin-top: 36px; }
+.family { margin: 0 0 24px; }
+.family img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--rule); }
