@@ -100,14 +100,14 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
   <div class="bottomline">
     <p class="bl-q" id="exQ"></p>
     <dl class="bl-kpis" id="blKpis"></dl>
-    <p class="bl-head">What we found</p>
+    <p class="bl-head">Results</p>
     <ol class="bl-points" id="blPoints"></ol>
     <p class="bl-rec" id="blRec"></p>
   </div>
 </section>
 
 <section aria-labelledby="about">
-  <h2 id="about">About this analysis</h2>
+  <h2 id="about">About the data</h2>
   <div class="prose">
     <p>Lending Club was the largest US marketplace lender of the 2010s. It graded each borrower from A to G, set an interest rate for each of 35 sub-grades, and sold the loans to investors. Its public loan file covers every loan issued from 2007 through 2018 (<span id="t_loans"></span> loans, <span id="t_usd"></span>), with each loan's outcome as of March 2019, plus <span id="t_rej"></span> rejected applications.</p>
     <p>A lender's pricing is a bet that each grade's interest rate will more than cover its losses. This study checks that bet loan by loan: how losses built up by vintage, what investors actually earned in each grade once defaults and recoveries came in, and whether a model built only on information available at application could have picked out the loans that lost money.</p>
@@ -115,7 +115,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch1">
-  <h2 id="ch1"><span class="n">1</span>How much was lent, and how fast loans went bad</h2>
+  <h2 id="ch1"><span class="n">1</span>Lending volume and loss timing</h2>
   <div class="grid2">
     <figure>
       <figcaption><b>Figure 1.</b> Loans funded per year ($ billions), with the share of applications approved</figcaption>
@@ -132,7 +132,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch2">
-  <h2 id="ch2"><span class="n">2</span>What investors actually earned</h2>
+  <h2 id="ch2"><span class="n">2</span>Realized returns by grade</h2>
   <div class="prose">
     <p>The matured book is every 36-month loan issued from 2010 through 2015 (<span id="m_n"></span> loans, <span id="m_usd"></span>), all of which had reached their final status by the data cutoff. For each loan, monthly cash flows are rebuilt from its installment, the total it paid, and when it stopped paying. Recoveries arrive six months after charge-off, and the investor pays Lending Club's 1% servicing fee. The realized return is what investors actually earned per year, like an interest rate after losses.</p>
   </div>
@@ -150,10 +150,10 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch3">
-  <h2 id="ch3"><span class="n">3</span>Could a model have found the money-losing loans?</h2>
+  <h2 id="ch3"><span class="n">3</span>Screening out money-losing loans</h2>
   <div class="prose">
     <p id="s3lead"></p>
-    <p><b>How it was tested.</b> The model learned from loans made in 2013 and 2014, then was asked to score every 2015 loan it had never seen, using only what Lending Club knew on the day each application came in. Because every 2015 loan has since been paid off or charged off, its predictions can be checked against what actually happened, in dollars.</p>
+    <p>The model learned from loans made in 2013 and 2014, then was asked to score every 2015 loan it had never seen, using only what Lending Club knew on the day each application came in. Because every 2015 loan has since been paid off or charged off, its predictions can be checked against what actually happened, in dollars.</p>
   </div>
   <figure>
     <figcaption><b>Figure 4.</b> The riskiest tenth of loans lost money: lifetime return to investors on 2015 loans, grouped by the model's risk score</figcaption>
@@ -161,7 +161,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
     <div class="fignote" id="decNote"></div>
   </figure>
   <figure>
-    <figcaption><b>Figure 5.</b> Same grade, same price, very different results: lifetime return within each grade, split into fifths by the model's risk score</figcaption>
+    <figcaption><b>Figure 5.</b> Lifetime return within each grade, split into fifths by the model's risk score</figcaption>
     <div class="legend" id="wgLegend"></div>
     <div class="chart" id="wg" style="min-height:300px"></div>
     <div class="fignote" id="wgNote"></div>
@@ -173,7 +173,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
     <div class="fignote" id="polNote"></div>
   </figure>
   <details class="tech">
-    <summary>Technical detail: model accuracy and the inputs that drive it</summary>
+    <summary>Model performance and key inputs</summary>
     <div class="grid2">
       <figure>
         <figcaption><b>Table 2.</b> Out-of-time performance on 2015 loans</figcaption>
@@ -390,18 +390,18 @@ function fillExec(){
   const M=D.model, P=M.policy, b=P.best.full, top=M.deciles.at(-1), d=M.within_grade.filter(r=>r.grade==='D');
   const mb=D.loans.matured_book, G=Object.fromEntries(D.loans.by_grade.map(g=>[g.grade,g]));
   const at=(v,m)=>D.loans.vintage_curves[v].find(p=>p[0]===m)[1];
-  $('#exQ').innerHTML=`<b>The question:</b> did Lending Club's interest rates cover its losses, and could it have avoided the loans that lost money?`;
+  $('#exQ').innerHTML=`This study measures whether Lending Club's interest rates covered its credit losses, and how much an application-time risk model could have added by screening out loans that lost money.`;
   $('#blKpis').innerHTML=`<div><dt>${mb.irr.toFixed(1)}%</dt><dd>annual return investors actually earned on loans that ran their full term</dd></div>
     <div><dt>${pct(top.roi,1).replace('-','−')}</dt><dd>return on the riskiest tenth of loans, despite a ${top.rate.toFixed(1)}% interest rate</dd></div>
     <div><dt>+${money(b.uplift)}</dt><dd>more investor profit on one year of loans by turning down the riskiest ${b.k}% of applicants</dd></div>`;
   $('#blPoints').innerHTML=[
-    `<b>Higher rates did not mean higher returns.</b> Grade B loans earned investors the most, ${G.B.irr.toFixed(1)}% a year. Grade G borrowers paid ${G.G.rate.toFixed(0)}% interest, but ${pct(G.G.bad_rate)} of them defaulted, so investors earned just ${G.G.irr.toFixed(1)}%.`,
-    `<b>Newer loans went bad faster.</b> In their first year, loans made in 2016 lost ${pct(at('2016',12),1)} of their dollars to defaults, against ${pct(at('2014',12),1)} for loans made in 2014.`,
-    `<b>Each grade mixed good and bad borrowers at one price.</b> In grade D, the safest fifth of borrowers earned investors ${pct(d[0].roi,1)} while the riskiest fifth lost ${pct(-d[4].roi,1)}, though both paid almost the same rate.`,
-    `<b>The money-losing loans were predictable from the application.</b> Turning down the riskiest ${b.k}% would have raised investor profit on 2015 loans from ${money(P.base_profit)} to ${money(P.base_profit+b.uplift)}. Turning loans down by grade alone adds almost nothing.`
+    `Grade B loans earned investors the most, ${G.B.irr.toFixed(1)}% a year. Grade G borrowers paid ${G.G.rate.toFixed(0)}% interest, but ${pct(G.G.bad_rate)} of them defaulted, so investors earned just ${G.G.irr.toFixed(1)}%.`,
+    `Losses arrived faster in later years. In their first year, loans made in 2016 lost ${pct(at('2016',12),1)} of their dollars to defaults, against ${pct(at('2014',12),1)} for loans made in 2014.`,
+    `Within each grade, borrowers paying the same rate performed very differently. In grade D, the safest fifth of borrowers earned investors ${pct(d[0].roi,1)} while the riskiest fifth lost ${pct(-d[4].roi,1)}, though both paid almost the same rate.`,
+    `Turning down the riskiest ${b.k}% would have raised investor profit on 2015 loans from ${money(P.base_profit)} to ${money(P.base_profit+b.uplift)}. Turning loans down by grade alone adds almost nothing.`
   ].map(x=>`<li>${x}</li>`).join('');
   $('#s3lead').innerHTML=`Scored on information from the application alone, the riskiest ${b.k}% of 2015 loans lost investors money even after their higher interest rates. Turning them down would have added ${money(b.uplift)} of profit, while turning loans down by grade alone adds almost nothing.`;
-  $('#blRec').innerHTML=`<b>What to do:</b> keep the grade, but add a model score as a second screen. Decline the riskiest ${b.k}% of applicants, use the score to charge riskier borrowers more within each grade, and track each new month of loans against earlier ones so rising losses are caught early.`;
+  $('#blRec').innerHTML=`<b>Recommendation.</b> Keep the grade, but add a model score as a second screen. Decline the riskiest ${b.k}% of applicants, use the score to charge riskier borrowers more within each grade, and track each new month of loans against earlier ones so rising losses are caught early.`;
 }
 
 function drawAll(){ drawVol(); drawVin(); drawSG(); drawDec(); drawWG(); drawPol(); drawShap(); }

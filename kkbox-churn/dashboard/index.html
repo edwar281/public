@@ -106,14 +106,14 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
   <div class="bottomline">
     <p class="bl-q" id="exQ"></p>
     <dl class="bl-kpis" id="blKpis"></dl>
-    <p class="bl-head">What we found</p>
+    <p class="bl-head">Findings</p>
     <ol class="bl-points" id="blPoints"></ol>
     <p class="bl-rec" id="blRec"></p>
   </div>
 </section>
 
 <section aria-labelledby="about">
-  <h2 id="about">About this analysis</h2>
+  <h2 id="about">Background and data</h2>
   <div class="prose">
     <p>A subscription business loses customers at renewal. Using public data from KKBox, a large Asian music-streaming service with carrier-style billing, this analysis examines predictors of churn and how well we can predict next month's churners.</p>
     <p>The data cover 2015 to 2017: 392 million daily usage records, 23 million billing transactions and 6.8 million member profiles. Two questions drive the work. When in the customer lifecycle do new subscribers leave, and what changes that timing? And using only what is known before a month begins, how many of that month's churners can be identified?</p>
@@ -121,7 +121,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch1">
-  <h2 id="ch1"><span class="n">1</span>When do new subscribers churn?</h2>
+  <h2 id="ch1"><span class="n">1</span>Most churn happens at the first renewal</h2>
   <div class="prose">
     <p id="s1lead"></p>
     <p>The analysis follows every new paying subscriber who joined between March 2015 and December 2016 (564K people) until they left or the data ended. Subscribers still active when the data ended count only for the months we saw, so recent sign-ups do not make retention look better than it is.</p>
@@ -153,10 +153,10 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch2">
-  <h2 id="ch2"><span class="n">2</span>Can we spot next month's churners in time?</h2>
+  <h2 id="ch2"><span class="n">2</span>Predicting next month's churners</h2>
   <div class="prose">
     <p id="s2lead"></p>
-    <p><b>How it was tested.</b> A model learned from 993K subscribers whose memberships expired in February 2017, using only what was known before February began. It was then applied, unchanged, to 971K subscribers expiring in March. That mirrors real use: learn from last month, score next month.</p>
+    <p>A model learned from 993K subscribers whose memberships expired in February 2017, using only what was known before February began. It was then applied, unchanged, to 971K subscribers expiring in March. That mirrors real use: learn from last month, score next month.</p>
   </div>
   <div class="grid2">
     <figure>
@@ -170,7 +170,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
     </figure>
   </div>
   <details class="tech">
-    <summary>Technical detail: model accuracy, calibration and drivers</summary>
+    <summary>Model diagnostics: accuracy, calibration and drivers</summary>
     <figure>
       <figcaption><b>Table A.</b> Out-of-time performance (March 2017) as each data source is added</figcaption>
       <div class="tblwrap"><table id="specTbl"></table></div>
@@ -377,17 +377,17 @@ function fillExec(){
   const r=D.surv.ret12, hr=Object.fromEntries(D.surv.cox.terms.map(t=>[t.term,t])), S=D.model.specs;
   const auB=S['B. + Billing history'].oot_mar.auc, auC=S['C. + Listening behaviour'].oot_mar.auc;
   const mH=D.surv.hazard['Manual renewal'], cap=D.model.capture['10%'], lift=D.model.lift[0].lift;
-  $('#exQ').innerHTML=`<b>The question:</b> when do new subscribers leave a streaming service, what keeps them, and can next month's leavers be found in time to save them?`;
+  $('#exQ').innerHTML=`This study looks at when new subscribers to KKBox, a music-streaming service, cancel, what keeps them subscribed, and whether next month's cancellations can be predicted early enough to act on.`;
   $('#blKpis').innerHTML=`<div><dt>${pct(r.billing['Auto-renew'])} vs. ${pct(r.billing['Manual renewal'])}</dt><dd>new subscribers still paying after a year: auto-renew vs. manual renewal</dd></div>
     <div><dt>${pct(Math.max(...mH))}</dt><dd>of manual-renewal subscribers leave at their first renewal, the riskiest month by far</dd></div>
     <div><dt>${pct(cap)}</dt><dd>of next month's churners found by contacting just the riskiest 10% of subscribers</dd></div>`;
   $('#blPoints').innerHTML=[
-    `<b>How customers pay matters most.</b> Customers on auto-renew are ${pct(1-hr['Auto-renew billing'].hr)} less likely to leave than similar customers who renew by hand, after accounting for plan, age and sign-up channel.`,
-    `<b>The first renewal is the danger point.</b> ${pct(Math.max(...mH))} of manual-renewal customers leave when their first plan expires. A year in, only ${pct(mH[11],1)} leave in a given month.`,
-    `<b>Free trials bring in weak customers.</b> Only about ${pct(D.surv.trial.rate)} of ${(D.surv.trial.trials/1000).toFixed(0)}K free trials turned into paying customers, and those who did left ${hr['Converted from free trial'].hr.toFixed(1)} times as fast as customers who paid from day one.`,
-    `<b>Next month's leavers can be found in advance.</b> The riskiest tenth of customers, scored before the month began, held ${pct(cap)} of the month's churners, ${Math.round(lift)} times better than picking at random. Billing history does nearly all the work; 392 million rows of listening data add almost nothing.`
+    `Billing setup is the strongest driver of retention. Customers on auto-renew are ${pct(1-hr['Auto-renew billing'].hr)} less likely to leave than similar customers who renew by hand, after accounting for plan, age and sign-up channel.`,
+    `The first renewal is the danger point. ${pct(Math.max(...mH))} of manual-renewal customers leave when their first plan expires. A year in, only ${pct(mH[11],1)} leave in a given month.`,
+    `Only about ${pct(D.surv.trial.rate)} of ${(D.surv.trial.trials/1000).toFixed(0)}K free trials turned into paying customers, and those who did left ${hr['Converted from free trial'].hr.toFixed(1)} times as fast as customers who paid from day one.`,
+    `The riskiest tenth of customers, scored before the month began, held ${pct(cap)} of the month's churners, ${Math.round(lift)} times better than picking at random. Billing history does nearly all the work; 392 million rows of listening data add almost nothing.`
   ].map(x=>`<li>${x}</li>`).join('');
-  $('#blRec').innerHTML=`<b>What to do:</b> make auto-renew the default at sign-up. Put retention offers in the weeks before a customer's first renewal. Judge free-trial campaigns on customers still paying months later, not on sign-ups. Each month, score the customer base and contact the riskiest 10%, and re-check the model's predicted churn rate against a small sample of actual results so forecasts stay accurate.`;
+  $('#blRec').innerHTML=`<b>Recommendations.</b> Make auto-renew the default at sign-up. Time retention offers for the weeks before a customer's first renewal. Measure free-trial campaigns by how many customers are still paying six months later. Score the customer base monthly, contact the riskiest 10%, and check the model's forecast against a small sample of actual results each month.`;
   $('#s1lead').innerHTML=`Most customers who leave do so at their first renewal, and customers on auto-renew rarely leave at all. After a year, ${pct(r.billing['Auto-renew'])} of auto-renew customers were still paying, against ${pct(r.billing['Manual renewal'])} of those who renewed by hand.`;
   $('#s2lead').innerHTML=`Contacting the riskiest 10% of subscribers, as ranked before the month began, reaches ${pct(cap)} of that month's churners, ${Math.round(lift)} times better than random. Billing history drives nearly all of that accuracy.`;
 }

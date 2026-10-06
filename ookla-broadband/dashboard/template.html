@@ -100,14 +100,14 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
   <div class="bottomline">
     <p class="bl-q" id="exQ"></p>
     <dl class="bl-kpis" id="blKpis"></dl>
-    <p class="bl-head">What we found</p>
+    <p class="bl-head">Key results</p>
     <ol class="bl-points" id="blPoints"></ol>
     <p class="bl-rec" id="blRec"></p>
   </div>
 </section>
 
 <section aria-labelledby="about">
-  <h2 id="about">About this analysis</h2>
+  <h2 id="about">Background</h2>
   <div class="prose">
     <p>Ookla publishes the results of Speedtest runs as quarterly averages for a global grid of roughly 600-meter tiles. This study takes every quarter from <span id="t_first"></span> to <span id="t_last"></span> for both home broadband (fixed) and mobile networks, keeps the tiles inside the United States, and assigns each one to its county: <span id="t_tiles"></span> tile-quarters covering <span id="t_tests"></span> speed tests.</p>
     <p>Three questions drive the work. How much faster did American internet get, and did rural counties share in the gains? What still explains why rural speeds are lower: the places themselves, their incomes, or how spread out their people are? And can a surge in speed tests be used to spot network outages?</p>
@@ -115,7 +115,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch1">
-  <h2 id="ch1"><span class="n">1</span>How much faster did the US get?</h2>
+  <h2 id="ch1"><span class="n">1</span>National speeds since 2019</h2>
   <div class="prose">
     <p><span id="s1lead"></span> Each line is the typical (median) speed test result in each quarter. Medians are used because a few very fast connections pull averages up sharply.</p>
   </div>
@@ -133,7 +133,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch2">
-  <h2 id="ch2"><span class="n">2</span>Did rural America catch up?</h2>
+  <h2 id="ch2"><span class="n">2</span>Rural catch-up</h2>
   <div class="prose">
     <p><span id="s2lead"></span></p>
     <p>Counties are grouped by the USDA's 2023 Rural-Urban Continuum Codes: large metro areas (1 million people or more), smaller metro areas, nonmetro counties with a town of 2,500 or more, and rural counties with no such town.</p>
@@ -172,13 +172,13 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch3">
-  <h2 id="ch3"><span class="n">3</span>Why are rural speeds still lower?</h2>
+  <h2 id="ch3"><span class="n">3</span>What explains the remaining rural gap</h2>
   <div class="prose">
     <p id="s3lead"></p>
     <p>Rural counties differ from cities in several ways at once: they are poorer on average, they sit in different states with different broadband programs, and their homes are far more spread out. To separate these, the analysis compares counties that are alike on one factor at a time and checks how much of the rural speed gap is left.</p>
   </div>
   <figure>
-    <figcaption><b>Figure 4.</b> How much slower the most rural counties are than large metros, after comparing like with like</figcaption>
+    <figcaption><b>Figure 4.</b> How much slower the most rural counties are than large metros, as more county differences are accounted for</figcaption>
     <div class="chart" id="gap" style="min-height:0"></div>
     <div class="fignote">Most rural counties: no town of 2,500 or more people and not next to a metro area. The gap is the difference in typical home download speed over the latest four quarters, across <span id="regN"></span> counties.</div>
   </figure>
@@ -200,7 +200,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
     <div class="tblwrap"><table id="lagTbl"></table></div>
   </figure>
   <details class="tech">
-    <summary>Technical detail: regression results</summary>
+    <summary>Regression table</summary>
     <figure>
       <figcaption><b>Table A.</b> County regressions of log median download speed: the rural coefficient as controls are added</figcaption>
       <div class="tblwrap"><table id="regTbl"></table></div>
@@ -210,7 +210,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch4">
-  <h2 id="ch4"><span class="n">4</span>Can speed tests reveal network disruptions?</h2>
+  <h2 id="ch4"><span class="n">4</span>Detecting outages from speed tests</h2>
   <div class="prose">
     <p>Speed tests can flag large or long outages. People run speed tests when their connection misbehaves, so an unusual burst of tests is a warning sign in its own right, and a stronger one when speeds drop or delays (latency) rise at the same time.</p>
     <p>For <span id="anN"></span> counties with enough tests in every quarter, each quarter is compared with that county's own normal pattern. A quarter is flagged when tests run far above normal and either speed falls well below normal or delays rise well above it. That rule flagged <span id="anF"></span> of <span id="anC"></span> county-quarters. The strongest independent check is Hurricane Helene: both Buncombe County (Asheville) and Henderson County, North Carolina, are flagged in the fourth quarter of 2024, after the storm took down power and networks across the region in late September.</p>
@@ -447,20 +447,20 @@ function fillText(){
   const r0=avg(g('4 Rural').med_d,B), r1=avg(g('4 Rural').med_d,L), m0=avg(g('1 Large metro').med_d,B), m1=avg(g('1 Large metro').med_d,L);
   const s0=avg(g('4 Rural').share_100_20,B), s1=avg(g('4 Rural').share_100_20,L);
   const R=D.regression, gap=b=>Math.round((1-Math.exp(b))*100), A=D.anom;
-  $('#exQ').innerHTML=`<b>The question:</b> has rural America closed its broadband gap, what still holds it back, and can speed tests spot network outages?`;
+  $('#exQ').innerHTML=`This study uses seven years of Ookla speed tests to measure how far rural broadband has caught up with cities, what explains the remaining gap, and whether test data can detect network outages.`;
   $('#blKpis').innerHTML=`<div><dt>${fmt(r0)} → ${fmt(r1)} Mbps</dt><dd>typical rural home download speed, 2019 vs. the latest year</dd></div>
     <div><dt>${pct(s0)} → ${pct(s1)}</dt><dd>share of rural speed tests meeting the federal 100/20 broadband benchmark</dd></div>
     <div><dt>${A.n_flagged}</dt><dd>likely outages flagged from speed tests alone, including Hurricane Helene in North Carolina</dd></div>`;
   $('#blPoints').innerHTML=[
-    `<b>Everyone got much faster.</b> Typical home broadband rose from ${fmt(MF.fixed_19)} to ${fmt(MF.fixed_26)} Mbps (${(MF.fixed_26/MF.fixed_19).toFixed(1)}×) and mobile from ${fmt(MF.mobile_19)} to ${fmt(MF.mobile_26)} Mbps (${(MF.mobile_26/MF.mobile_19).toFixed(0)}×) as 5G rolled out.`,
-    `<b>Rural areas caught up in percentage terms, but the gap in Mbps grew.</b> Rural speeds went from ${pct(r0/m0)} to ${pct(r1/m1)} of big-city speeds, yet the difference widened from ${fmt(m0-r0)} to ${fmt(m1-r1)} Mbps because cities kept getting faster too.`,
-    `<b>The remaining gap is about how spread out people are, not income.</b> The most rural counties are ${gap(R[0].rucc9)}% slower than large metros. Comparing counties with the same income barely changes that, but comparing counties with similar population density cuts it to ${gap(R.at(-1).rucc9)}%. Wiring sparse areas costs more per home.`,
-    `<b>Speed tests work as an outage alarm.</b> Bursts of tests alongside falling speeds flagged ${A.n_flagged} of ${A.n_cells.toLocaleString()} county-quarters, including the two North Carolina counties hit hardest by Hurricane Helene in late 2024.`
+    `Typical home broadband rose from ${fmt(MF.fixed_19)} to ${fmt(MF.fixed_26)} Mbps (${(MF.fixed_26/MF.fixed_19).toFixed(1)}×) and mobile from ${fmt(MF.mobile_19)} to ${fmt(MF.mobile_26)} Mbps (${(MF.mobile_26/MF.mobile_19).toFixed(0)}×) as 5G rolled out.`,
+    `Rural speeds went from ${pct(r0/m0)} to ${pct(r1/m1)} of big-city speeds, yet the difference widened from ${fmt(m0-r0)} to ${fmt(m1-r1)} Mbps because cities kept getting faster too.`,
+    `Most of the remaining gap comes from population density. The most rural counties are ${gap(R[0].rucc9)}% slower than large metros. Comparing counties with the same income barely changes that, but comparing counties with similar population density cuts it to ${gap(R.at(-1).rucc9)}%. Wiring sparse areas costs more per home.`,
+    `Bursts of tests alongside falling speeds flagged ${A.n_flagged} of ${A.n_cells.toLocaleString()} county-quarters, including the two North Carolina counties hit hardest by Hurricane Helene in late 2024.`
   ].map(x=>`<li>${x}</li>`).join('');
-  $('#blRec').innerHTML=`<b>What to do:</b> aim the remaining build-out money at sparse, high-cost areas and judge projects by cost per home connected, not by local income. Track the lagging counties in Table 3 by name. And run the speed-test alarm on weekly data so providers and emergency managers see outages within days, not quarters.`;
+  $('#blRec').innerHTML=`<b>Implications.</b> Direct remaining build-out funding to sparse, high-cost areas and evaluate projects by cost per home connected. Track the lagging counties in Table 3 by name. Running the speed-test alarm on weekly data would let providers and emergency managers see outages within days.`;
   $('#s1lead').textContent=`Home broadband got about ${(MF.fixed_26/MF.fixed_19).toFixed(1)} times faster since 2019, and mobile about ${(MF.mobile_26/MF.mobile_19).toFixed(0)} times, closing most of its gap with home broadband.`;
   $('#s2lead').textContent=`Rural counties improved the most in percentage terms, ${(r1/r0).toFixed(0)}× against ${(m1/m0).toFixed(1)}× in large metros, and ${pct(s1)} of rural tests now meet the federal benchmark. But because cities kept improving too, rural homes are still ${fmt(m1-r1)} Mbps behind.`;
-  $('#s3lead').innerHTML=`Rural speeds lag mainly because rural homes are spread out, which makes them costlier to wire, rather than because rural areas are poorer. The most rural counties are ${gap(R[0].rucc9)}% slower than large metros. Among counties with similar population density, the gap falls to ${gap(R.at(-1).rucc9)}%, and income no longer matters.`;
+  $('#s3lead').innerHTML=`Rural speeds lag mainly because rural homes are spread out and cost more to wire. The most rural counties are ${gap(R[0].rucc9)}% slower than large metros. Among counties with similar population density, the gap falls to ${gap(R.at(-1).rucc9)}%, and income no longer matters.`;
 }
 
 function drawAll(){ drawNat(); drawGrp(); drawMap(); drawGap(); drawConv(); drawAnom(); }
