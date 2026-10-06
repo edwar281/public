@@ -116,6 +116,9 @@ h1 { font: 500 clamp(2.2rem, 5vw, 3.4rem)/1.08 var(--f-display); letter-spacing:
 .case header { display: grid; gap: 8px; }
 .case .meta { font: 500 0.78rem/1.4 var(--f-mono); color: var(--accent); }
 .case h2, .case h3 { font: 500 clamp(1.6rem, 3vw, 2rem)/1.2 var(--f-display); letter-spacing: -0.005em; }
+.diagram { margin: 4px 0; display: grid; gap: 8px; }
+.diagram img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
+.diagram figcaption { font-size: 0.85rem; color: var(--ink-soft); }
 .case .lede { font-size: 1.08rem; max-width: 64ch; }
 .pao { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; margin: 0; padding-top: 18px; border-top: 1px solid var(--rule); }
 .pao div { min-width: 0; }
