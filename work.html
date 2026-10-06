@@ -12,7 +12,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="assets/site.css?v=27ed1b46">
+<link rel="stylesheet" href="assets/site.css?v=de6f45d2">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -40,7 +40,10 @@
   <div class="thread">
     <p class="eyebrow" style="margin:0">A thread through my career</p>
     <h2 id="thread-title" style="font:500 1.4rem/1.25 var(--f-display)">Connecting what customers do to why they do it</h2>
-    <p>The same question has come up in every operations role I've held: which calls, chats and clicks lead to which outcomes? I've built a version of this mapping at three companies, each one larger and more automated than the last.</p>
+    <div class="thread-row">
+      <img class="thread-img" src="assets/thread-loom.jpg" width="1080" height="607" alt="Colorful threads on a loom">
+      <p>The same question has come up in every operations role I've held: which calls, chats and clicks lead to which outcomes? I've built a version of this mapping at three companies, each one larger and more automated than the last.</p>
+    </div>
     <ol class="steps">
       <li><span class="yr">2014&ndash;16</span><strong>Calls to clients</strong><span>A multi-stage process matching calls to specific Discover Bank customers</span></li>
       <li><span class="yr">2018&ndash;20</span><strong>Web URLs to transactions</strong><span>An algorithm mapping Schwab web activity to financial transactions</span></li>
@@ -66,12 +69,16 @@
     <ul class="tags"><li>Agentic AI</li><li>Claude</li><li>Gemini</li><li>Prompt engineering</li><li>Change leadership</li></ul>
   </article>
 
-  <article class="case" id="network-ml">
+  <article class="case has-fig" id="network-ml">
     <header>
       <span class="meta">Spectrum &middot; 2024&ndash;present &middot; Machine learning on network data</span>
       <h2>Usage profiles and competitor outage detection</h2>
     </header>
     <p class="lede">Two machine learning products built from very large network and speed-test datasets, one for product segmentation and one for marketing.</p>
+    <figure class="diagram">
+      <img src="assets/outage-map.jpg" width="1088" height="750" alt="Map of the United States with red circles marking locations, densest across the Midwest, California and Arizona">
+      <figcaption>Illustrative map of outage hotspots across US metro areas.</figcaption>
+    </figure>
     <dl class="pao">
       <div><dt>Problem</dt><dd>Product teams needed to know how households actually use their internet. Marketing needed to know when competitors' networks were down.</dd></div>
       <div><dt>Approach</dt><dd><ul>
@@ -101,12 +108,15 @@
     <ul class="tags"><li>NLP</li><li>Speech analytics</li><li>Machine learning</li><li>Agile</li></ul>
   </article>
 
-  <article class="case" id="schwab-models">
+  <article class="case has-fig" id="schwab-models">
     <header>
       <span class="meta">Charles Schwab &middot; 2020&ndash;2024 &middot; ML and generative AI portfolio</span>
       <h2>A data science portfolio worth more than $10M a year</h2>
     </header>
     <p class="lede">I led a team building machine learning, NLP and generative AI models across the client lifecycle, and partnered with executives to decide which ones to fund.</p>
+    <figure class="diagram">
+      <img src="assets/ai-funding.jpg" width="1360" height="752" alt="A scale weighing a stack of coins labeled Cost against a glowing light bulb labeled ROI, beside a rising bar chart and a robotic hand placing a coin">
+    </figure>
     <dl class="pao">
       <div><dt>Problem</dt><dd>Many possible AI use cases and limited people to build them. Leaders needed a clear view of value, cost and staffing before committing.</dd></div>
       <div><dt>Approach</dt><dd>Defined use cases, ROI and resourcing with executives for committee approval, then built attrition, lifetime value, fraud, call propensity and chatbot models.</dd></div>
