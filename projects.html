@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects | Will Edwards</title>
+<meta name="description" content="Independent data science projects on public data, with dashboards and code.">
+<meta property="og:title" content="Projects | Will Edwards">
+<meta property="og:description" content="Independent data science projects on public data, with dashboards and code.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="container">
+    <a class="brand" href="index.html">Will Edwards, PhD</a>
+    <nav aria-label="Main">
+      <ul class="nav">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="work.html">Work</a></li>
+        <li><a href="projects.html" aria-current="page">Projects</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<main id="main" class="container">
+<section class="page-intro">
+  <p class="eyebrow">Independent projects</p>
+  <h1>Projects you can open and explore</h1>
+  <p>Work done on public data, with the code and results published so anyone can check them. These show how I approach a problem end to end, from raw data to a decision-ready answer.</p>
+</section>
+
+<section aria-label="Projects">
+  <article class="case panel" id="kkbox-churn">
+    <header>
+      <span class="meta">October 2026 &middot; Survival analysis, LightGBM, SHAP</span>
+      <h2>Subscription churn at scale</h2>
+    </header>
+    <p class="lede">When do new subscribers to a music-streaming service leave, and who will leave next month? I worked through both questions end to end on KKBox's public churn dataset, from raw billing logs to a published dashboard.</p>
+    <dl class="kpis">
+      <div><dt>0.869</dt><dd>AUC on an out-of-time March 2017 test (971K subscribers)</dd></div>
+      <div><dt>6.0&times;</dt><dd>lift: the riskiest decile captured 60% of next month's churners</dd></div>
+      <div><dt>72% vs 37%</dt><dd>12-month retention, auto-renew vs manual renewal</dd></div>
+      <div><dt>0.45</dt><dd>adjusted hazard ratio for auto-renew (95% CI 0.44&ndash;0.46)</dd></div>
+    </dl>
+    <dl class="pao">
+      <div><dt>Data</dt><dd>392M daily usage records, 23M billing transactions and 6.8M member profiles from 2015 to 2017. A cohort of 564K new paying subscribers tracked from first payment.</dd></div>
+      <div><dt>Approach</dt><dd>Kaplan&ndash;Meier curves and a stratified Cox model for timing. LightGBM for next-month churn, validated out of time rather than on random splits, with recalibration when the base rate moved from 6.4% to 9.0%.</dd></div>
+      <div><dt>Findings</dt><dd>Manual-renewal risk spikes at the first expiry and again near month 7, when 180-day plans end. Converted free trials churn 1.7&times; faster than direct signups. Usage data added only 0.004 AUC over billing data alone.</dd></div>
+    </dl>
+    <p class="actions">
+      <a class="btn" href="https://edwar281.github.io/public/kkbox-churn/dashboard/">Open the dashboard</a>
+      <a class="btn ghost" href="https://github.com/edwar281/public/tree/main/kkbox-churn" rel="noopener">Code on GitHub</a>
+    </p>
+    <ul class="tags"><li>Python</li><li>Survival analysis</li><li>Cox regression</li><li>LightGBM</li><li>SHAP</li><li>Built with Claude</li></ul>
+  </article>
+</section>
+
+<section aria-label="More to come">
+  <div class="next">
+    <strong>More projects on the way</strong>
+    <span>I'm adding new studies here as I finish them. Follow along on <a href="https://github.com/edwar281" rel="noopener">GitHub</a>.</span>
+  </div>
+</section>
+
+<section class="contact" aria-labelledby="contact-title">
+  <div>
+    <h2 id="contact-title">Looking for someone to lead analytics, data science or AI?</h2>
+    <p>I'm glad to talk about leadership roles, AI adoption in analytics teams, or anything on this site.</p>
+  </div>
+  <ul>
+    <li class="email"><a href="mailto:edwar281@gmail.com">edwar281@gmail.com</a></li>
+    <li><a href="https://www.linkedin.com/in/williamaedwards" rel="noopener">LinkedIn</a></li>
+    <li><a href="https://github.com/edwar281" rel="noopener">GitHub</a></li>
+    <li><a href="https://www.cloudskillsboost.google/public_profiles/9ac31947-fc91-422f-a510-274ea5ed46ab" rel="noopener">Google Cloud Skills profile</a></li>
+  </ul>
+</section>
+</main>
+<footer class="site-foot">
+  <div class="container">
+    <span>&copy; 2026 Will Edwards &middot; Denver, Colorado</span>
+    <ul>
+      <li><a href="mailto:edwar281@gmail.com">Email</a></li>
+      <li><a href="https://www.linkedin.com/in/williamaedwards" rel="noopener">LinkedIn</a></li>
+      <li><a href="https://github.com/edwar281" rel="noopener">GitHub</a></li>
+    </ul>
+  </div>
+</footer>
+</body>
+</html>
