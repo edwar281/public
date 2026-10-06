@@ -1,0 +1,6 @@
+duckdb>=1.1
+pyarrow>=17
+pandas>=2.2
+numpy>=1.26
+shapely>=2.0
+statsmodels>=0.14

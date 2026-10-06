@@ -1,0 +1,413 @@
+<title>Lending Club Credit Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Same report layout as the KKBox and broadband studies: one 920px column, numbered sections, hairline figures. Light only. */
+:root{
+  --bg:#ffffff; --panel:#ffffff; --ink:#1a1d21; --ink-2:#454b53; --muted:#7a8088;
+  --rule:#e4e6e9; --axis:#c3c7cc; --accent:#1f4e8c;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a;
+  --o1:#86b6ef; --o2:#3987e5; --o3:#256abf; --o4:#184f95; --o5:#0d366b;
+  --q1:#cde2fb; --q2:#86b6ef; --q3:#3987e5; --q4:#1c5cab; --q5:#0d366b; --nodata:#f0efec;
+  --band1:rgba(42,120,214,.12);
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;margin:0}
+.wrap{max-width:920px;margin:0 auto;padding-inline:20px;padding-block:48px 64px;display:grid;gap:48px}
+h1,h2,h3{text-wrap:balance;margin:0;font-weight:600}
+h1{font-size:clamp(28px,4.4vw,38px);line-height:1.15;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.25;padding-top:8px;border-top:2px solid var(--ink)}
+h2 .n{color:var(--muted);font-weight:500;margin-right:10px}
+h3{font-size:16px;line-height:1.35}
+p{margin:0;max-width:72ch}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{display:grid;gap:14px}
+.subtitle{font-size:19px;color:var(--ink-2);line-height:1.4}
+.byline{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:14.5px;color:var(--ink-2);padding-block:10px;border-block:1px solid var(--rule)}
+.byline b{color:var(--ink);font-weight:600}
+section{display:grid;gap:22px}
+.prose{display:grid;gap:14px}
+.prose p{color:var(--ink-2)}
+ol.findings{margin:0;padding-left:22px;display:grid;gap:14px;max-width:76ch}
+ol.findings li{color:var(--ink-2);padding-left:4px}
+ol.findings li b{color:var(--ink);font-weight:600}
+figure{margin:0;display:grid;gap:10px;min-width:0;padding-top:14px;border-top:1px solid var(--rule)}
+figcaption{font-size:14px;color:var(--ink-2);max-width:80ch}
+figcaption b{color:var(--ink);font-weight:600}
+.fignote{font-size:13px;color:var(--muted);max-width:80ch}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}
+@media (max-width:820px){.grid2{grid-template-columns:1fr}}
+.chart{width:100%;min-height:260px;position:relative}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.chart .lbl{fill:var(--ink-2);font-family:var(--f-body);font-size:12px}
+.chart .lbl-strong{fill:var(--ink);font-family:var(--f-body);font-size:12px;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--ink-2);align-items:center}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.sq{width:12px;height:12px;border-radius:2px}
+.legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)!important}
+.mono{font-family:var(--f-mono)}
+.seg{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13.5px;color:var(--muted);align-items:baseline}
+.seg button{font:inherit;border:0;background:none;padding:2px 0;color:var(--ink-2);cursor:pointer;border-bottom:2px solid transparent}
+.seg button[aria-pressed="true"]{color:var(--ink);border-bottom-color:var(--ink);font-weight:500}
+.controls{display:flex;flex-wrap:wrap;gap:6px 28px}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;vertical-align:top}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+thead th{font-weight:600;color:var(--ink);border-bottom:1px solid var(--ink)}
+tr.final td{font-weight:600}
+td.heat{color:var(--ink)}
+.tblwrap{overflow-x:auto}
+.methods{display:grid;gap:18px}
+.methods h3{margin-bottom:4px}
+.methods p{color:var(--ink-2);font-size:15px}
+.bottomline{display:grid;gap:14px;padding:20px 22px;border:1px solid var(--rule);border-left:4px solid var(--accent);background:#f6f8fb;border-radius:4px}
+.bl-head{font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.bl-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;margin:0}
+@media (max-width:640px){.bl-kpis{grid-template-columns:1fr}}
+.bl-kpis dt{font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.bl-kpis dd{margin:4px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.bl-points{margin:0;padding-left:20px;display:grid;gap:8px;max-width:76ch;color:var(--ink-2)}
+.bl-points b,.bl-rec b{color:var(--ink)}
+.bl-rec{color:var(--ink-2);max-width:76ch;padding-top:12px;border-top:1px solid var(--rule)}
+details.tech{border-top:1px solid var(--rule);padding-top:14px}
+details.tech summary{cursor:pointer;font-size:14.5px;font-weight:500;color:var(--accent)}
+details.tech[open] summary{margin-bottom:16px}
+details.tech .fignote{margin-top:14px}
+footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;color:var(--muted);font-size:13.5px}
+#map path{stroke:var(--bg);stroke-width:.35}
+#map path:hover{stroke:var(--ink);stroke-width:1.2}
+#tip{position:fixed;pointer-events:none;background:var(--panel);color:var(--ink);border:1px solid var(--rule);box-shadow:0 4px 16px rgba(0,0,0,.12);border-radius:4px;padding:7px 9px;font-size:12.5px;line-height:1.45;z-index:10;max-width:300px}
+#tip b{font-weight:600}
+#tip .sw{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>Did the Rate Cover the Risk?</h1>
+  <p class="subtitle">Credit losses, realized investor returns and a profit-based approval policy across 2.26 million Lending Club loans</p>
+  <div class="byline"><span><b>Will Edwards, PhD</b></span><span>October 2026</span><a href="https://github.com/edwar281/public/tree/main/lending-club-credit">Code on GitHub</a></div>
+  <div class="prose">
+    <p>Lending Club was the largest US marketplace lender of the 2010s. It graded each borrower from A to G, set an interest rate for each of 35 sub-grades, and sold the loans to investors. Its public loan file covers every loan issued from 2007 through 2018 (<span id="t_loans"></span> loans, <span id="t_usd"></span>), with each loan's outcome as of March 2019, plus <span id="t_rej"></span> rejected applications.</p>
+    <p>A lender's pricing is a bet that each grade's interest rate will more than cover its losses. This study checks that bet loan by loan: how losses built up by vintage, what investors actually earned in each grade once defaults and recoveries came in, and whether a model built only on information available at application could have picked out the loans that lost money.</p>
+  </div>
+</header>
+
+<section aria-labelledby="sum">
+  <h2 id="sum">Summary</h2>
+  <ol class="findings" id="findings"></ol>
+</section>
+
+<section aria-labelledby="ch1">
+  <h2 id="ch1"><span class="n">1</span>The book and its losses</h2>
+  <div class="grid2">
+    <figure>
+      <figcaption><b>Figure 1.</b> Loans funded per year ($ billions), with the share of applications approved</figcaption>
+      <div class="chart" id="vol" style="min-height:280px"></div>
+      <div class="fignote" id="volNote"></div>
+    </figure>
+    <figure>
+      <figcaption><b>Figure 2.</b> Cumulative share of dollars charged off, by months since issue (36-month loans)</figcaption>
+      <div class="legend" id="vinLegend"></div>
+      <div class="chart" id="vin" style="min-height:280px"></div>
+      <div class="fignote" id="vinNote"></div>
+    </figure>
+  </div>
+</section>
+
+<section aria-labelledby="ch2">
+  <h2 id="ch2"><span class="n">2</span>What investors actually earned</h2>
+  <div class="prose">
+    <p>The matured book is every 36-month loan issued from 2010 through 2015 (<span id="m_n"></span> loans, <span id="m_usd"></span>), all of which had reached their final status by the data cutoff. For each loan, monthly cash flows are rebuilt from its installment, the total it paid, and when it stopped paying. Recoveries arrive six months after charge-off, and the investor pays Lending Club's 1% servicing fee. The realized return is the annual internal rate of return on each pool of loans.</p>
+  </div>
+  <figure>
+    <figcaption><b>Figure 3.</b> Interest rate charged vs. realized annual return to investors, by sub-grade (36-month loans issued 2010–2015)</figcaption>
+    <div class="legend"><span><i style="background:var(--s2)"></i>Interest rate charged</span><span><i style="background:var(--s1)"></i>Realized annual return (IRR)</span></div>
+    <div class="chart" id="sg" style="min-height:320px"></div>
+    <div class="fignote">Sub-grades with fewer than 500 matured loans are omitted. The gap between the lines is the share of the rate eaten by defaults, net of recoveries and fees.</div>
+  </figure>
+  <figure>
+    <figcaption><b>Table 1.</b> Matured book by grade</figcaption>
+    <div class="tblwrap"><table id="gradeTbl"></table></div>
+    <div class="fignote">Charged off: share of loans that defaulted. Net loss: unrecovered principal as a share of dollars lent. Realized return: annual IRR to investors after defaults, recoveries and the 1% servicing fee.</div>
+  </figure>
+</section>
+
+<section aria-labelledby="ch3">
+  <h2 id="ch3"><span class="n">3</span>Could a model have found the money-losing loans?</h2>
+  <div class="bottomline" aria-label="Bottom line">
+    <p class="bl-head">Bottom line</p>
+    <dl class="bl-kpis" id="blKpis"></dl>
+    <ol class="bl-points" id="blPoints"></ol>
+    <p class="bl-rec" id="blRec"></p>
+  </div>
+  <div class="prose">
+    <p><b>How it was tested.</b> The model learned from loans made in 2013 and 2014, then was asked to score every 2015 loan it had never seen, using only what Lending Club knew on the day each application came in. Because every 2015 loan has since been paid off or charged off, its predictions can be checked against what actually happened, in dollars.</p>
+  </div>
+  <figure>
+    <figcaption><b>Figure 4.</b> The riskiest tenth of loans lost money: lifetime return to investors on 2015 loans, grouped by the model's risk score</figcaption>
+    <div class="chart" id="dec" style="min-height:260px"></div>
+    <div class="fignote" id="decNote"></div>
+  </figure>
+  <figure>
+    <figcaption><b>Figure 5.</b> Same grade, same price, very different results: lifetime return within each grade, split into fifths by the model's risk score</figcaption>
+    <div class="legend" id="wgLegend"></div>
+    <div class="chart" id="wg" style="min-height:300px"></div>
+    <div class="fignote" id="wgNote"></div>
+  </figure>
+  <figure>
+    <figcaption><b>Figure 6.</b> What turning down the riskiest loans would have done to investor profit on 2015 loans</figcaption>
+    <div class="legend"><span><i style="background:var(--s1)"></i>Ranked by the model</span><span><i style="background:var(--s3)"></i>Model without Lending Club's grade</span><span><i style="background:var(--s2)"></i>Ranked by Lending Club's grade alone</span></div>
+    <div class="chart" id="pol" style="min-height:300px"></div>
+    <div class="fignote" id="polNote"></div>
+  </figure>
+  <details class="tech">
+    <summary>Technical detail: model accuracy and the inputs that drive it</summary>
+    <div class="grid2">
+      <figure>
+        <figcaption><b>Table 2.</b> Out-of-time performance on 2015 loans</figcaption>
+        <div class="tblwrap"><table id="specTbl"></table></div>
+        <div class="fignote" id="specNote"></div>
+      </figure>
+      <figure>
+        <figcaption><b>Figure 7.</b> Inputs with the largest influence on predicted default: mean absolute SHAP value (log-odds) across 20K 2015 loans</figcaption>
+        <div class="chart" id="shap" style="min-height:360px"></div>
+      </figure>
+    </div>
+    <p class="fignote">The model is LightGBM, trained on 36-month loans issued January 2013 to September 2014 (<span id="n_tr"></span> loans), tuned on the fourth quarter of 2014, and scored once on all 36-month loans issued in 2015 (<span id="n_te"></span> loans, <span id="te_usd"></span>). Inputs are credit bureau attributes, income, debt-to-income, employment, loan purpose and state. It never sees payment history or later credit pulls.</p>
+  </details>
+</section>
+
+<section aria-labelledby="meth" id="methods">
+  <h2 id="meth"><span class="n">4</span>Data and methods</h2>
+  <div class="methods">
+    <div>
+      <h3>Data and definitions</h3>
+      <p>Lending Club accepted and rejected loan files, 2007–2018Q4, as published on Kaggle (wordsforthewise/lending-club), with loan status as of March 2019. A loan is bad if it was charged off, in default, or 31–120 days late at the cutoff. The file gives the last payment month but not the charge-off date, so charge-off is placed five months after the last payment, matching Lending Club's 150-day charge-off rule. Vintage curves count a loan at month <i>m</i> only if it had been on the books for at least <i>m</i> months by the cutoff.</p>
+    </div>
+    <div>
+      <h3>Returns</h3>
+      <p>Each loan's payments are spread as regular installments up to its last payment month, scaled to the total actually received, with any excess treated as a prepayment in the final month. Recoveries net of collection fees arrive six months after charge-off. Pool IRRs solve for the monthly rate that equates pooled cash flows with dollars lent and are annualized. Lifetime return in Section 3 is total cash received minus dollars lent, divided by dollars lent, without discounting.</p>
+    </div>
+    <div>
+      <h3>Modeling and policy</h3>
+      <p>Validation is out-of-time: the model never sees 2015 loans while training or tuning. Bureau fields that Lending Club only began reporting in late 2015 are excluded. The approval policy declines the riskiest <i>k</i>% of 2015 loans under each ranking and sums the realized profit of the rest. Because Lending Club's sub-grade has only 35 values, ties within the marginal sub-grade are broken at random. SHAP values are LightGBM's built-in tree contributions.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div>Data: Lending Club loan data 2007–2018, via Kaggle. Lending Club is not affiliated with this work.</div>
+  <div>Limitations: one lender's approved population (the model cannot learn about rejected applicants); returns are reconstructed from summary payment fields, not monthly payment records; profit ignores funding costs and the time value of money; results are associations.</div>
+  <div>Analysis by Will Edwards. Assisted by Claude.</div>
+</footer>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const D = __DATA__;
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const pct = (v,d=0) => (v*100).toFixed(d)+'%';
+const money = v => (v<0?'−':'')+(Math.abs(v)>=1e9?'$'+(Math.abs(v)/1e9).toFixed(1)+'B':Math.abs(v)>=1e5?'$'+(Math.abs(v)/1e6).toFixed(1)+'M':'$'+Math.round(Math.abs(v)).toLocaleString());
+const NS='http://www.w3.org/2000/svg';
+function el(tag, attrs={}, parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function txt(parent, x, y, s, attrs={}){ const t=el('text',{x,y,...attrs},parent); t.textContent=s; return t; }
+const tip=$('#tip');
+function showTip(html, ev){ tip.innerHTML=html; tip.hidden=false; const w=tip.offsetWidth,h=tip.offsetHeight; let x=ev.clientX+14,y=ev.clientY+14; if(x+w>innerWidth-8)x=ev.clientX-w-14; if(y+h>innerHeight-8)y=ev.clientY-h-14; tip.style.left=x+'px'; tip.style.top=y+'px'; }
+function hideTip(){ tip.hidden=true; }
+const sw = c => `<span class="sw" style="background:${c}"></span>`;
+function lin(d0,d1,r0,r1){ return v => r0+(v-d0)/(d1-d0)*(r1-r0); }
+function frame(host, h, m){ host.innerHTML=''; const w=Math.max(280, host.clientWidth); const svg=el('svg',{width:w,height:h,viewBox:`0 0 ${w} ${h}`,role:'img'},host); return {svg,w,h,iw:w-m.l-m.r,ih:h-m.t-m.b,m}; }
+function gridY(f, ys, y, fmt){ const g=el('g',{},f.svg); ys.forEach(v=>{ el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:y(v),y2:y(v),stroke:v===0?css('--axis'):css('--rule'),'stroke-width':1},g); txt(g,f.m.l-8,y(v)+4,fmt(v),{'text-anchor':'end'}); }); }
+function axisX(f, xs, x, fmt, label){ const g=el('g',{},f.svg); el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:f.h-f.m.b,y2:f.h-f.m.b,stroke:css('--axis')},g); xs.forEach(v=>txt(g,x(v),f.h-f.m.b+16,fmt(v),{'text-anchor':'middle'})); if(label) txt(g,f.m.l+f.iw/2,f.h-4,label,{'text-anchor':'middle',class:'lbl'}); }
+const pathOf = pts => pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join('');
+function bar(svg, cx, bw, y0, y1, fill){ // rounded data-end, anchored at baseline y0
+  const up=y1<y0, h=Math.abs(y0-y1), r=Math.min(4,h); const x=cx-bw/2;
+  const d= up ? `M${x},${y0} V${y1+r} q0,-${r} ${r},-${r} h${bw-2*r} q${r},0 ${r},${r} V${y0}Z`
+              : `M${x},${y0} V${y1-r} q0,${r} ${r},${r} h${bw-2*r} q${r},0 ${r},-${r} V${y0}Z`;
+  return el('path',{d,fill},svg); }
+const O5=['--o1','--o2','--o3','--o4','--o5'];
+
+/* ---------- Figure 1 ---------- */
+function drawVol(){
+  const F=D.loans.funnel.filter(r=>r.y>=2009); const host=$('#vol'); const f=frame(host,280,{t:22,r:10,b:38,l:44});
+  const band=f.iw/F.length, bw=Math.min(28,band-8); const y=lin(0,8,f.h-f.m.b,f.m.t); gridY(f,[0,2,4,6,8],y,v=>'$'+v+'B');
+  const c=css('--s1');
+  F.forEach((r,i)=>{ const cx=f.m.l+band*i+band/2; bar(f.svg,cx,bw,y(0),y(r.usd/1e9),c);
+    txt(f.svg,cx,f.h-f.m.b+16,"'"+String(r.y).slice(2),{'text-anchor':'middle'});
+    if(r.y>=2013) txt(f.svg,cx,y(r.usd/1e9)-6,pct(r.approval_rate),{'text-anchor':'middle',class:'lbl'});
+    const hit=el('rect',{x:cx-band/2,y:f.m.t,width:band,height:f.ih,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>${r.y}</b><br>${sw(c)}Funded <b>${money(r.usd)}</b> across ${r.n_acc.toLocaleString()} loans<br>Applications rejected: ${r.n_rej.toLocaleString()}<br>Approval rate <b>${pct(r.approval_rate,1)}</b> · average rate ${r.rate.toFixed(1)}%`,ev));
+    hit.addEventListener('mouseleave',hideTip); });
+  const a=D.loans.funnel.find(r=>r.y===2013), b=D.loans.funnel.find(r=>r.y===2018);
+  $('#volNote').textContent=`Labels show the share of applications approved. Applications grew far faster than approvals: ${(b.n_rej/1e6).toFixed(1)}M were rejected in 2018, and the approval rate fell from ${pct(a.approval_rate)} in 2013 to ${pct(b.approval_rate)}.`;
+}
+
+/* ---------- Figure 2 ---------- */
+const VY=['2013','2014','2015','2016','2017'];
+function drawVin(){
+  $('#vinLegend').innerHTML=VY.map((v,i)=>`<span><i style="background:var(${O5[i]})"></i>${v}</span>`).join('');
+  const host=$('#vin'); const f=frame(host,280,{t:12,r:46,b:38,l:44}); const x=lin(0,42,f.m.l,f.w-f.m.r), y=lin(0,.15,f.h-f.m.b,f.m.t);
+  gridY(f,[0,.05,.1,.15],y,v=>pct(v)); axisX(f,[0,6,12,18,24,30,36,42],x,v=>v,'Months since issue');
+  VY.forEach((v,i)=>{ const P=D.loans.vintage_curves[v]; const c=css(O5[i]);
+    el('path',{d:pathOf(P.map(p=>[x(p[0]),y(p[1])])),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+    const L=P.at(-1); el('circle',{cx:x(L[0]),cy:y(L[1]),r:4,fill:c,stroke:css('--panel'),'stroke-width':2},f.svg);
+    txt(f.svg,x(L[0])+7,y(L[1])+4,v,{class:'lbl-strong'}); });
+  const vline=el('line',{y1:f.m.t,y2:f.h-f.m.b,stroke:css('--axis'),visibility:'hidden'},f.svg);
+  const hit=el('rect',{x:f.m.l,y:f.m.t,width:f.iw,height:f.ih,fill:'transparent'},f.svg);
+  hit.addEventListener('mousemove',ev=>{ const r=f.svg.getBoundingClientRect(); const m=Math.max(0,Math.min(42,Math.round((ev.clientX-r.left-f.m.l)/f.iw*14)*3));
+    vline.setAttribute('x1',x(m)); vline.setAttribute('x2',x(m)); vline.setAttribute('visibility','visible');
+    const rows=VY.map((v,i)=>{const p=D.loans.vintage_curves[v].find(p=>p[0]===m); return p?`${sw(css(O5[i]))}${v}: <b>${pct(p[1],1)}</b>`:''}).filter(Boolean);
+    showTip(`<b>Month ${m}</b><br>${rows.join('<br>')||'not yet observed'}`,ev); });
+  hit.addEventListener('mouseleave',()=>{vline.setAttribute('visibility','hidden');hideTip();});
+  const at=(v,m)=>D.loans.vintage_curves[v].find(p=>p[0]===m)[1];
+  $('#vinNote').textContent=`Twelve months in, the 2016 vintage had charged off ${pct(at('2016',12),1)} of its dollars, against ${pct(at('2014',12),1)} for 2014. By month 24 it was at ${pct(at('2016',24),1)} vs. ${pct(at('2014',24),1)}. Curves stop where fewer than 90% of a vintage's loans had been on the books that long.`;
+}
+
+/* ---------- Figure 3 + Table 1 ---------- */
+function drawSG(){
+  const S=D.loans.by_subgrade; const host=$('#sg'); const f=frame(host,320,{t:14,r:16,b:38,l:44});
+  const n=S.length, x=lin(0,n-1,f.m.l+10,f.w-f.m.r-10), y=lin(0,26,f.h-f.m.b,f.m.t);
+  gridY(f,[0,5,10,15,20,25],y,v=>v+'%');
+  el('line',{x1:f.m.l,x2:f.w-f.m.r,y1:f.h-f.m.b,y2:f.h-f.m.b,stroke:css('--axis')},f.svg);
+  S.forEach((s,i)=>{ if(s.sub_grade.endsWith('1')||i===0) txt(f.svg,x(i),f.h-f.m.b+16,s.sub_grade,{'text-anchor':'middle'}); });
+  txt(f.svg,f.m.l+f.iw/2,f.h-4,'Sub-grade (A1 = safest)',{'text-anchor':'middle',class:'lbl'});
+  const c2=css('--s2'), c1=css('--s1');
+  el('path',{d:pathOf(S.map((s,i)=>[x(i),y(s.rate)]))+pathOf(S.map((s,i)=>[x(i),y(s.irr)]).reverse()).replace('M','L')+'Z',fill:'rgba(235,104,52,.10)'},f.svg);
+  [['rate',c2],['irr',c1]].forEach(([k,c])=>{ el('path',{d:pathOf(S.map((s,i)=>[x(i),y(s[k])])),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+    S.forEach((s,i)=>el('circle',{cx:x(i),cy:y(s[k]),r:3,fill:c},f.svg)); });
+  const pk=S.reduce((a,s,i)=>s.irr>S[a].irr?i:a,0);
+  txt(f.svg,x(pk),y(S[pk].irr)-12,`Peak ${S[pk].irr.toFixed(1)}% at ${S[pk].sub_grade}`,{'text-anchor':'middle',class:'lbl-strong'});
+  const L=n-1; txt(f.svg,x(L)-4,y(S[L].irr)+18,`${S[L].sub_grade}: ${S[L].irr.toFixed(1)}%`,{'text-anchor':'end',class:'lbl-strong'});
+  txt(f.svg,x(L)-4,y(S[L].rate)-10,`${S[L].rate.toFixed(1)}% charged`,{'text-anchor':'end',class:'lbl'});
+  S.forEach((s,i)=>{ const hit=el('rect',{x:x(i)-f.iw/n/2,y:f.m.t,width:f.iw/n,height:f.ih,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>${s.sub_grade}</b> · ${s.n.toLocaleString()} loans<br>${sw(c2)}Rate charged <b>${s.rate.toFixed(1)}%</b><br>${sw(c1)}Realized return <b>${s.irr.toFixed(2)}%</b><br>Charged off ${pct(s.bad_rate,1)} · net loss ${pct(s.loss_rate,1)}`,ev));
+    hit.addEventListener('mouseleave',hideTip); });
+}
+function fillGrade(){
+  let h='<thead><tr><th>Grade</th><th>Loans</th><th>Dollars lent</th><th>Avg. rate</th><th>Charged off</th><th>Net loss</th><th>Realized return</th></tr></thead><tbody>';
+  D.loans.by_grade.forEach(g=>{ h+=`<tr><td>${g.grade}</td><td>${g.n.toLocaleString()}</td><td>${money(g.usd)}</td><td>${g.rate.toFixed(1)}%</td><td>${pct(g.bad_rate,1)}</td><td>${pct(g.loss_rate,1)}</td><td>${g.irr.toFixed(2)}%</td></tr>`; });
+  const m=D.loans.matured_book; h+=`<tr class="final"><td>All</td><td>${m.n.toLocaleString()}</td><td>${money(m.usd)}</td><td>${m.rate.toFixed(1)}%</td><td>${pct(m.bad_rate,1)}</td><td>${pct(m.loss_rate,1)}</td><td>${m.irr.toFixed(2)}%</td></tr>`;
+  $('#gradeTbl').innerHTML=h+'</tbody>';
+}
+
+/* ---------- Table 2 + Figure 4 ---------- */
+function fillSpec(){
+  const M=D.model; const rows=[['Sub-grade only (Lending Club’s ranking)','grade_only'],['Borrower attributes, no grade','borrower'],['Borrower attributes + grade + rate','full']];
+  const best=M.policy.best;
+  let h='<thead><tr><th>Ranking</th><th>AUC</th><th>PR-AUC</th><th>Best profit gain</th></tr></thead><tbody>';
+  rows.forEach(([n,k],i)=>{ h+=`<tr class="${i===2?'final':''}"><td>${n}</td><td>${M[k].auc.toFixed(3)}</td><td>${M[k].pr_auc.toFixed(3)}</td><td>${best[k].uplift>0?'+':''}${money(best[k].uplift)}</td></tr>`; });
+  $('#specTbl').innerHTML=h+'</tbody>';
+  $('#specNote').textContent=`AUC is the probability that a random defaulter is ranked above a random repayer (0.5 is chance). The 2015 default rate was ${pct(M.n.test_bad,1)}. Best profit gain: the most profit added by declining the riskiest loans under that ranking, from Figure 6.`;
+}
+function drawDec(){
+  const R=D.model.deciles.slice().reverse(); const host=$('#dec'); const f=frame(host,260,{t:22,r:10,b:38,l:44});
+  const band=f.iw/10, bw=Math.min(26,band-8); const y=lin(-.02,.08,f.h-f.m.b,f.m.t); gridY(f,[-.02,0,.02,.04,.06,.08],y,v=>pct(v));
+  R.forEach((d,i)=>{ const cx=f.m.l+band*i+band/2; const c=d.roi<0?css('--s2'):css('--s1'); bar(f.svg,cx,bw,y(0),y(d.roi),c);
+    txt(f.svg,cx,f.h-f.m.b+16,i+1,{'text-anchor':'middle'});
+    if(i===0||i===9) txt(f.svg,cx,d.roi<0?y(d.roi)+14:y(d.roi)-6,pct(d.roi,1),{'text-anchor':'middle',class:'lbl-strong'});
+    const hit=el('rect',{x:cx-band/2,y:f.m.t,width:band,height:f.ih,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>Decile ${i+1}</b> ${i===0?'(riskiest 10%)':i===9?'(safest 10%)':''}<br>${sw(c)}Lifetime net return <b>${pct(d.roi,1)}</b><br>Average rate ${d.rate.toFixed(1)}% · default rate ${pct(d.actual,1)} (predicted ${pct(d.pred,1)})<br>Profit ${money(d.profit)} on ${money(d.usd)}`,ev));
+    hit.addEventListener('mouseleave',hideTip); });
+  txt(f.svg,f.m.l+f.iw/2,f.h-4,'Predicted-risk decile (1 = riskiest)',{'text-anchor':'middle',class:'lbl'});
+  const top=R[0]; $('#decNote').textContent=`Each bar is one tenth of 2015 loans, from riskiest (1) to safest (10). Lifetime return is everything investors got back, minus what they lent. The riskiest tenth paid an average ${top.rate.toFixed(1)}% interest, but ${pct(top.actual)} of those borrowers defaulted, so investors lost ${pct(-top.roi,1)}. Every other group made money.`;
+}
+
+/* ---------- Figure 5 ---------- */
+function drawWG(){
+  $('#wgLegend').innerHTML=['Lowest risk fifth','2nd','3rd','4th','Highest risk fifth'].map((l,i)=>`<span><i class="sq" style="background:var(${O5[i]});border-radius:50%"></i>${l}</span>`).join('');
+  const W=D.model.within_grade, G=['A','B','C','D','E']; const host=$('#wg'); const f=frame(host,300,{t:14,r:16,b:38,l:48});
+  const band=f.iw/G.length; const y=lin(-.08,.12,f.h-f.m.b,f.m.t); gridY(f,[-.08,-.04,0,.04,.08,.12],y,v=>pct(v));
+  G.forEach((g,gi)=>{ const cx=f.m.l+band*gi+band/2; txt(f.svg,cx,f.h-f.m.b+16,'Grade '+g,{'text-anchor':'middle',class:'lbl'});
+    const pts=W.filter(r=>r.grade===g).sort((a,b)=>a.q_in_grade-b.q_in_grade);
+    const xs=q=>cx+(q-2)*Math.min(18,band/7);
+    el('path',{d:pathOf(pts.map(r=>[xs(r.q_in_grade),y(r.roi)])),fill:'none',stroke:css('--axis'),'stroke-width':1},f.svg);
+    pts.forEach(r=>{ const c=css(O5[r.q_in_grade]); el('circle',{cx:xs(r.q_in_grade),cy:y(r.roi),r:5,fill:c,stroke:css('--panel'),'stroke-width':2},f.svg);
+      const hit=el('circle',{cx:xs(r.q_in_grade),cy:y(r.roi),r:10,fill:'transparent'},f.svg);
+      hit.addEventListener('mousemove',ev=>showTip(`<b>Grade ${g}, risk fifth ${r.q_in_grade+1} of 5</b><br>${sw(c)}Lifetime net return <b>${pct(r.roi,1)}</b><br>Average rate ${r.rate.toFixed(2)}% · default rate ${pct(r.bad,1)}`,ev));
+      hit.addEventListener('mouseleave',hideTip); }); });
+  const d=W.filter(r=>r.grade==='D'), lo=d.find(r=>r.q_in_grade===0), hi=d.find(r=>r.q_in_grade===4);
+  $('#wgNote').textContent=`Each dot is one fifth of a grade's loans. Moving down a grade's dots, the rate barely changes but returns fall steeply. In grade D the safest fifth paid ${lo.rate.toFixed(1)}% and returned ${pct(lo.roi,1)}; the riskiest fifth paid ${hi.rate.toFixed(1)}% and returned ${pct(hi.roi,1)}, with ${pct(hi.bad)} defaulting against ${pct(lo.bad)}.`;
+}
+
+/* ---------- Figure 6 ---------- */
+function drawPol(){
+  const P=D.model.policy, C=P.curve; const host=$('#pol'); const f=frame(host,300,{t:14,r:16,b:40,l:52});
+  const x=lin(0,40,f.m.l,f.w-f.m.r); const base=P.base_profit; const y=lin(-60e6,10e6,f.h-f.m.b,f.m.t);
+  gridY(f,[-60e6,-40e6,-20e6,0,10e6],y,v=>(v>0?'+':v<0?'−':'')+'$'+Math.abs(v/1e6)+'M');
+  axisX(f,[0,10,20,30,40],x,v=>v+'%','Share of 2015 loans declined, riskiest first');
+  const S=[['full',css('--s1'),'Model with grade'],['borrower',css('--s3'),'Model without grade'],['grade_only',css('--s2'),'Sub-grade only']];
+  S.forEach(([k,c])=>el('path',{d:pathOf(C.map(r=>[x(r.k),y(r[k]-base)])),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg));
+  const b=P.best.full; el('circle',{cx:x(b.k),cy:y(b.uplift),r:5,fill:css('--s1'),stroke:css('--panel'),'stroke-width':2},f.svg);
+  txt(f.svg,x(b.k)+10,y(b.uplift)-8,`Decline ${b.k}%: +${money(b.uplift)}`,{class:'lbl-strong'});
+  const vline=el('line',{y1:f.m.t,y2:f.h-f.m.b,stroke:css('--axis'),visibility:'hidden'},f.svg);
+  const hit=el('rect',{x:f.m.l,y:f.m.t,width:f.iw,height:f.ih,fill:'transparent'},f.svg);
+  hit.addEventListener('mousemove',ev=>{ const r=f.svg.getBoundingClientRect(); const k=Math.max(0,Math.min(40,Math.round((ev.clientX-r.left-f.m.l)/f.iw*40))); const row=C[k];
+    vline.setAttribute('x1',x(k)); vline.setAttribute('x2',x(k)); vline.setAttribute('visibility','visible');
+    showTip(`<b>Decline riskiest ${k}%</b><br>`+S.map(([kk,c,n])=>`${sw(c)}${n}: <b>${row[kk]-base>=0?'+':''}${money(row[kk]-base)}</b>`).join('<br>'),ev); });
+  hit.addEventListener('mouseleave',()=>{vline.setAttribute('visibility','hidden');hideTip();});
+  const be=C.find(r=>r.k>0&&r.full<base); const beK=be?be.k:40;
+  $('#polNote').textContent=`Each line starts at zero, which is approving every 2015 loan: investors made ${money(base)} on ${money(D.model.n.test_usd)} lent. Turning down the model's riskiest ${b.k}% of applicants would have added ${money(b.uplift)}. Past about ${beK}%, the model starts turning away loans that would have paid off, and profit falls. Turning loans down by Lending Club's grade alone barely helps (at most ${money(P.best.grade_only.uplift)}), because every grade as a whole still made money. The losers were hidden inside each grade.`;
+}
+
+/* ---------- Figure 7 ---------- */
+const FEAT={sg:'Lending Club sub-grade',int_rate:'Interest rate',acc_open_past_24mths:'Accounts opened, 24 mo',pti:'Payment-to-income ratio',dti:'Debt-to-income ratio',addr_state:'State',annual_inc:'Annual income',fico_range_low:'FICO score',home_ownership:'Home ownership',mo_sin_old_rev_tl_op:'Age of oldest revolving account',emp_length:'Years employed',num_actv_rev_tl:'Active revolving accounts',loan_amnt:'Loan amount',purpose:'Loan purpose',mort_acc:'Mortgage accounts',tot_hi_cred_lim:'Total credit limit',credit_age_m:'Credit history length',avg_cur_bal:'Average account balance',bc_open_to_buy:'Open-to-buy on bankcards',inq_last_6mths:'Credit inquiries, past 6 months',revol_util:'Revolving utilization',verification_status:'Income verification',total_bc_limit:'Total bankcard limit',tot_cur_bal:'Total current balance',mths_since_recent_inq:'Months since last inquiry',total_rev_hi_lim:'Total revolving limit',mo_sin_rcnt_tl:'Months since newest account',bc_util:'Bankcard utilization',num_tl_op_past_12m:'Accounts opened, 12 mo',total_il_high_credit_limit:'Installment credit limit'};
+const LC=new Set(['sg','int_rate']);
+function drawShap(){
+  const host=$('#shap'); const S=D.model.shap_top.slice(0,12); const lw=host.clientWidth<480?175:220;
+  const f=frame(host,20+S.length*26+30,{t:6,r:48,b:30,l:lw}); const mx=Math.ceil(S[0].mean_abs*10)/10; const x=lin(0,mx,f.m.l,f.w-f.m.r);
+  [0,mx/2,mx].forEach(v=>{ el('line',{x1:x(v),x2:x(v),y1:f.m.t,y2:f.h-f.m.b,stroke:css('--rule')},f.svg); txt(f.svg,x(v),f.h-f.m.b+16,v.toFixed(2),{'text-anchor':'middle'}); });
+  S.forEach((s,i)=>{ const yy=f.m.t+8+i*26, bh=14, w=x(s.mean_abs)-f.m.l; const c=LC.has(s.feature)?css('--s2'):css('--s1'); const r=Math.min(4,w);
+    el('path',{d:`M${f.m.l},${yy} h${w-r} q${r},0 ${r},${r} v${bh-2*r} q0,${r} -${r},${r} h-${w-r}Z`,fill:c},f.svg);
+    txt(f.svg,f.m.l-10,yy+11,FEAT[s.feature]||s.feature,{'text-anchor':'end',class:'lbl'});
+    txt(f.svg,f.m.l+w+6,yy+11,s.mean_abs.toFixed(2),{});
+    const hit=el('rect',{x:0,y:yy-5,width:f.w,height:24,fill:'transparent'},f.svg);
+    hit.addEventListener('mousemove',ev=>showTip(`<b>${FEAT[s.feature]||s.feature}</b><br>${sw(c)}${LC.has(s.feature)?'Lending Club pricing':'Borrower attribute'} · mean |SHAP| <b>${s.mean_abs.toFixed(3)}</b>`,ev)); hit.addEventListener('mouseleave',hideTip); });
+  const lg=document.createElement('div'); lg.className='legend'; lg.innerHTML=`<span><i style="background:var(--s2)"></i>Lending Club pricing</span><span><i style="background:var(--s1)"></i>Borrower attribute</span>`; host.appendChild(lg);
+}
+
+/* ---------- text ---------- */
+function fillText(){
+  const T=D.loans.totals, M=D.model, mb=D.loans.matured_book, G=Object.fromEntries(D.loans.by_grade.map(g=>[g.grade,g]));
+  $('#t_loans').textContent=(T.loans/1e6).toFixed(2)+' million'; $('#t_usd').textContent=money(T.usd); $('#t_rej').textContent=(T.rejected/1e6).toFixed(1)+' million';
+  $('#m_n').textContent=mb.n.toLocaleString(); $('#m_usd').textContent=money(mb.usd);
+  $('#n_tr').textContent=M.n.train.toLocaleString(); $('#n_te').textContent=M.n.test.toLocaleString(); $('#te_usd').textContent=money(M.n.test_usd);
+  const S=D.loans.by_subgrade, pk=S.reduce((a,s)=>s.irr>a.irr?s:a,S[0]); const top=M.deciles.at(-1);
+  const at=(v,m)=>D.loans.vintage_curves[v].find(p=>p[0]===m)[1];
+  const d=M.within_grade.filter(r=>r.grade==='D'); const b=M.policy.best;
+  const F=[
+    `<b>Higher rates stopped paying off past grade B.</b> On the matured book, investors earned ${mb.irr.toFixed(1)}% a year overall. Realized returns peaked at ${pk.irr.toFixed(1)}% in sub-grade ${pk.sub_grade} and fell to ${G.G.irr.toFixed(1)}% in grade G, even though grade G borrowers paid ${G.G.rate.toFixed(0)}% interest: ${pct(G.G.bad_rate)} of them defaulted.`,
+    `<b>Later vintages lost money faster.</b> Twelve months after issue, 2016 loans had charged off ${pct(at('2016',12),1)} of their dollars, against ${pct(at('2014',12),1)} for 2014 loans, even as the approval rate fell.`,
+    `<b>Each grade hides very different borrowers.</b> Within grade D, the average rate differed by less than half a point across the fifths, but the riskiest fifth by model score lost ${pct(-d[4].roi,1)} over the loans' life while the safest fifth earned ${pct(d[0].roi,1)}.`,
+    `<b>Application data alone ranks risk slightly better than the grade.</b> Scored out-of-time on 2015 loans, a model using only borrower attributes reached an AUC of ${M.borrower.auc.toFixed(3)}, against ${M.grade_only.auc.toFixed(3)} for Lending Club's sub-grade. Combining both reached ${M.full.auc.toFixed(3)}.`,
+    `<b>A model-based cutoff would have added about ${money(b.full.uplift)} on one year of loans.</b> Declining the riskiest ${b.full.k}% of 2015 loans by model score raises investor profit from ${money(M.policy.base_profit)} to ${money(M.policy.base_profit+b.full.uplift)} (+${pct(b.full.uplift/M.policy.base_profit)}). Declining by sub-grade alone adds at most ${money(b.grade_only.uplift)}. The riskiest model decile paid ${top.rate.toFixed(1)}% interest and still returned ${pct(top.roi,1).replace('-','−')}.`
+  ];
+  $('#findings').innerHTML=F.map(f=>`<li>${f}</li>`).join('');
+}
+
+function fillBottomLine(){
+  const M=D.model, P=M.policy, b=P.best.full, top=M.deciles.at(-1), d=M.within_grade.filter(r=>r.grade==='D');
+  const nDecl=Math.round(M.n.test*b.k/100);
+  $('#blKpis').innerHTML=`<div><dt>+${money(b.uplift)}</dt><dd>more profit for investors on one year of loans (+${pct(b.uplift/P.base_profit)})</dd></div>
+    <div><dt>${b.k}%</dt><dd>of applicants turned down to get there, about ${(Math.round(nDecl/1000)).toLocaleString()},000 of ${(M.n.test/1000).toFixed(0)},000 loans</dd></div>
+    <div><dt>${pct(top.roi,1).replace('-','−')}</dt><dd>return on the riskiest tenth of loans, despite a ${top.rate.toFixed(1)}% interest rate</dd></div>`;
+  $('#blPoints').innerHTML=[
+    `<b>Lending Club's grades sorted borrowers sensibly but priced them too broadly.</b> Within a grade, everyone paid nearly the same rate. In grade D, the safest fifth earned investors ${pct(d[0].roi,1)} while the riskiest fifth lost ${pct(-d[4].roi,1)}, at almost the same rate.`,
+    `<b>The money-losing loans were predictable at application.</b> Using only the information on the application, the model's riskiest tenth defaulted ${pct(top.actual)} of the time and lost money even at a ${top.rate.toFixed(1)}% rate.`,
+    `<b>Turning those loans down pays.</b> Declining the riskiest ${b.k}% would have raised investor profit on 2015 loans from ${money(P.base_profit)} to ${money(P.base_profit+b.uplift)}. Declining by grade alone adds almost nothing.`
+  ].map(x=>`<li>${x}</li>`).join('');
+  $('#blRec').innerHTML=`<b>Recommendation:</b> keep the grade, but add a model score as a second screen. Decline the riskiest ${b.k}% of applicants, and use the score to price within each grade so riskier borrowers pay for their risk.`;
+}
+
+function drawAll(){ drawVol(); drawVin(); drawSG(); drawDec(); drawWG(); drawPol(); drawShap(); }
+fillText(); fillGrade(); fillSpec(); fillBottomLine(); drawAll();
+document.querySelector('details.tech').addEventListener('toggle',drawAll);
+let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(drawAll,120);});
+document.fonts && document.fonts.ready.then(drawAll);
+</script>
