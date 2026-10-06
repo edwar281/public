@@ -5,7 +5,7 @@ Seven years of US internet speed tests, county by county, from **Ookla Open Data
 
 **Author:** Will Edwards, PhD. Assisted by Claude.
 
-**[View the live dashboard →](https://edwar281.github.io/public/ookla-broadband/dashboard/)**  
+**[Read the analysis →](https://edwar281.github.io/public/ookla-broadband/dashboard/)**  
 (Or open `dashboard/index.html` locally; it is self-contained.)
 
 ## Headline results

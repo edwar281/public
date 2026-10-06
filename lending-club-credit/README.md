@@ -5,7 +5,7 @@ Credit losses, realized investor returns and a profit-based approval policy on t
 
 **Author:** Will Edwards, PhD. Assisted by Claude.
 
-**[View the live dashboard →](https://edwar281.github.io/public/lending-club-credit/dashboard/)**  
+**[Read the analysis →](https://edwar281.github.io/public/lending-club-credit/dashboard/)**  
 (Or open `dashboard/index.html` locally; it is self-contained.)
 
 ## Headline results

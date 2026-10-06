@@ -74,6 +74,20 @@ td.heat{color:var(--ink)}
 .methods{display:grid;gap:18px}
 .methods h3{margin-bottom:4px}
 .methods p{color:var(--ink-2);font-size:15px}
+.bottomline{display:grid;gap:14px;padding:20px 22px;border:1px solid var(--rule);border-left:4px solid var(--accent);background:#f6f8fb;border-radius:4px}
+.bl-q{font-size:17px;color:var(--ink);max-width:72ch;line-height:1.45}
+.bl-head{font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.bl-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 24px;margin:0}
+@media (max-width:640px){.bl-kpis{grid-template-columns:1fr}}
+.bl-kpis dt{font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.bl-kpis dd{margin:4px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.4}
+.bl-points{margin:0;padding-left:20px;display:grid;gap:8px;max-width:76ch;color:var(--ink-2)}
+.bl-points b,.bl-rec b{color:var(--ink)}
+.bl-rec{color:var(--ink-2);max-width:76ch;padding-top:12px;border-top:1px solid var(--rule)}
+details.tech{border-top:1px solid var(--rule);padding-top:14px}
+details.tech summary{cursor:pointer;font-size:14.5px;font-weight:500;color:var(--accent)}
+details.tech[open] summary{margin-bottom:16px}
+details.tech .fignote{margin-top:14px}
 footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;color:var(--muted);font-size:13.5px}
 #map path{stroke:var(--bg);stroke-width:.35}
 #map path:hover{stroke:var(--ink);stroke-width:1.2}
@@ -87,21 +101,31 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
   <h1>Closing the Broadband Gap</h1>
   <p class="subtitle">Seven years of US internet speed tests, county by county: who caught up, what still explains the gap, and what the tests reveal about outages</p>
   <div class="byline"><span><b>Will Edwards, PhD</b></span><span>October 2026</span><a href="https://github.com/edwar281/public/tree/main/ookla-broadband">Code on GitHub</a></div>
-  <div class="prose">
-    <p>Ookla publishes the results of Speedtest runs as quarterly averages for a global grid of roughly 600-meter tiles. This study takes every quarter from <span id="t_first"></span> to <span id="t_last"></span> for both home broadband (fixed) and mobile networks, keeps the tiles inside the United States, and assigns each one to its county: <span id="t_tiles"></span> tile-quarters covering <span id="t_tests"></span> speed tests.</p>
-    <p>Three questions drive the work. How much faster did American internet get, and did rural counties share in the gains? Once speeds are measured county by county, is the remaining gap about rurality, income or population density? And can a surge in speed tests be used to spot network disruptions after the fact?</p>
-  </div>
 </header>
 
-<section aria-labelledby="sum">
-  <h2 id="sum">Summary</h2>
-  <ol class="findings" id="findings"></ol>
+<section aria-labelledby="sum" class="exec">
+  <h2 id="sum">Executive summary</h2>
+  <div class="bottomline">
+    <p class="bl-q" id="exQ"></p>
+    <dl class="bl-kpis" id="blKpis"></dl>
+    <p class="bl-head">What we found</p>
+    <ol class="bl-points" id="blPoints"></ol>
+    <p class="bl-rec" id="blRec"></p>
+  </div>
+</section>
+
+<section aria-labelledby="about">
+  <h2 id="about">About this analysis</h2>
+  <div class="prose">
+    <p>Ookla publishes the results of Speedtest runs as quarterly averages for a global grid of roughly 600-meter tiles. This study takes every quarter from <span id="t_first"></span> to <span id="t_last"></span> for both home broadband (fixed) and mobile networks, keeps the tiles inside the United States, and assigns each one to its county: <span id="t_tiles"></span> tile-quarters covering <span id="t_tests"></span> speed tests.</p>
+    <p>Three questions drive the work. How much faster did American internet get, and did rural counties share in the gains? What still explains why rural speeds are lower: the places themselves, their incomes, or how spread out their people are? And can a surge in speed tests be used to spot network outages?</p>
+  </div>
 </section>
 
 <section aria-labelledby="ch1">
   <h2 id="ch1"><span class="n">1</span>How much faster did the US get?</h2>
   <div class="prose">
-    <p>Each line is the median of tile-average speeds, weighted by the number of tests in each tile, so a tile with 40 tests counts 40 times. Medians are used because a few multi-gigabit connections pull averages up sharply.</p>
+    <p><b>In short:</b> <span id="s1lead"></span> Each line is the typical (median) speed test result in each quarter. Medians are used because a few very fast connections pull averages up sharply.</p>
   </div>
   <figure>
     <figcaption><b>Figure 1.</b> National median by quarter, home broadband vs. mobile</figcaption>
@@ -119,6 +143,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 <section aria-labelledby="ch2">
   <h2 id="ch2"><span class="n">2</span>Did rural America catch up?</h2>
   <div class="prose">
+    <p><b>In short:</b> <span id="s2lead"></span></p>
     <p>Counties are grouped by the USDA's 2023 Rural-Urban Continuum Codes: large metro areas (1 million people or more), smaller metro areas, nonmetro counties with a town of 2,500 or more, and rural counties with no such town.</p>
   </div>
   <figure>
@@ -155,52 +180,61 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
 </section>
 
 <section aria-labelledby="ch3">
-  <h2 id="ch3"><span class="n">3</span>What explains the remaining gap?</h2>
+  <h2 id="ch3"><span class="n">3</span>Why are rural speeds still lower?</h2>
   <div class="prose">
-    <p>Rural counties are also poorer and far less dense, so the raw rural gap mixes several things. Each row below is a county-level regression of log median download speed (latest four quarters) on rurality, adding median household income, state fixed effects and population density in turn. The coefficient on the most rural category shows how much of the gap survives each control.</p>
+    <p id="s3lead"></p>
+    <p>Rural counties differ from cities in several ways at once: they are poorer on average, they sit in different states with different broadband programs, and their homes are far more spread out. To separate these, the analysis compares counties that are alike on one factor at a time and checks how much of the rural speed gap is left.</p>
   </div>
   <figure>
-    <figcaption><b>Table 2.</b> Log median download speed across <span id="regN"></span> counties: what remains of the rural gap as controls are added</figcaption>
-    <div class="tblwrap"><table id="regTbl"></table></div>
-    <div class="fignote">Rural gap: speed in the most rural counties (RUCC 9) relative to large metro counties (RUCC 1), converted from the log coefficient. Income and density are elasticities: the percent change in speed for a 1% change. Standard errors clustered by state.</div>
+    <figcaption><b>Figure 4.</b> How much slower the most rural counties are than large metros, after comparing like with like</figcaption>
+    <div class="chart" id="gap" style="min-height:0"></div>
+    <div class="fignote">Most rural counties: no town of 2,500 or more people and not next to a metro area. The gap is the difference in typical home download speed over the latest four quarters, across <span id="regN"></span> counties.</div>
   </figure>
   <div class="grid2">
     <figure>
-      <figcaption><b>Figure 4.</b> Counties that started slowest improved fastest: 2019 median download vs. growth to the latest four quarters</figcaption>
+      <figcaption><b>Figure 5.</b> Counties that started slowest improved fastest: 2019 speed vs. how many times faster they got</figcaption>
       <div class="legend" id="convLegend"></div>
       <div class="chart" id="conv" style="min-height:320px"></div>
       <div class="fignote" id="convNote"></div>
     </figure>
     <figure>
-      <figcaption><b>Table 3.</b> Median county download speed (Mbps) by county type and income quintile, latest four quarters</figcaption>
+      <figcaption><b>Table 2.</b> Typical home download speed (Mbps) by county type and income level, latest four quarters</figcaption>
       <div class="tblwrap"><table id="incTbl"></table></div>
       <div class="fignote" id="incNote"></div>
     </figure>
   </div>
   <figure>
-    <figcaption><b>Table 4.</b> Counties of 10,000+ people with the lowest share of home-broadband tests at 100/20, latest four quarters</figcaption>
+    <figcaption><b>Table 3.</b> Where the gap is widest: counties of 10,000+ people with the lowest share of home-broadband tests meeting 100/20</figcaption>
     <div class="tblwrap"><table id="lagTbl"></table></div>
   </figure>
+  <details class="tech">
+    <summary>Technical detail: regression results</summary>
+    <figure>
+      <figcaption><b>Table A.</b> County regressions of log median download speed: the rural coefficient as controls are added</figcaption>
+      <div class="tblwrap"><table id="regTbl"></table></div>
+      <div class="fignote">Rural gap: speed in RUCC 9 counties relative to RUCC 1, converted from the log coefficient, with its 95% interval. Income and density are elasticities: the percent change in speed for a 1% change. Standard errors clustered by state.</div>
+    </figure>
+  </details>
 </section>
 
 <section aria-labelledby="ch4">
   <h2 id="ch4"><span class="n">4</span>Can speed tests reveal network disruptions?</h2>
   <div class="prose">
-    <p>People run speed tests when their connection misbehaves, so an unusual surge in test volume is a signal in its own right, and more so when speeds drop or latency rises at the same time. For <span id="anN"></span> counties with enough tests in every quarter, each quarter's test volume, median download and median latency are compared with the county's own trend after removing national seasonality, and scored as robust z-scores.</p>
-    <p>A county-quarter is flagged when test volume is unusually high (z above 4) and either speed is unusually low (z below −2) or latency unusually high (z above 3). That rule flagged <span id="anF"></span> of <span id="anC"></span> county-quarters. The strongest independent check is Hurricane Helene: both Buncombe County (Asheville) and Henderson County, North Carolina, are flagged in the fourth quarter of 2024, after the storm took down power and networks across the region in late September.</p>
+    <p><b>In short:</b> yes, for large or long outages. People run speed tests when their connection misbehaves, so an unusual burst of tests is a warning sign in its own right, and a stronger one when speeds drop or delays (latency) rise at the same time.</p>
+    <p>For <span id="anN"></span> counties with enough tests in every quarter, each quarter is compared with that county's own normal pattern. A quarter is flagged when tests run far above normal and either speed falls well below normal or delays rise well above it. That rule flagged <span id="anF"></span> of <span id="anC"></span> county-quarters. The strongest independent check is Hurricane Helene: both Buncombe County (Asheville) and Henderson County, North Carolina, are flagged in the fourth quarter of 2024, after the storm took down power and networks across the region in late September.</p>
   </div>
   <figure>
-    <figcaption><b>Figure 5.</b> Buncombe County, NC: z-scores of test volume, download speed and latency against the county's own trend</figcaption>
+    <figcaption><b>Figure 6.</b> Buncombe County, NC: how far test volume, download speed and latency moved from the county's normal pattern</figcaption>
     <div class="seg" role="group" aria-label="County" id="anSeg"><span>County:</span>
       <button type="button" aria-pressed="true" data-k="37021">Buncombe, NC</button>
       <button type="button" aria-pressed="false" data-k="37089">Henderson, NC</button>
     </div>
     <div class="legend"><span><i style="background:var(--s1)"></i>Test volume</span><span><i style="background:var(--s2)"></i>Median download</span><span><i style="background:var(--s3)"></i>Median latency</span></div>
     <div class="chart" id="anom" style="min-height:280px"></div>
-    <div class="fignote">A z-score of 0 means the quarter was on the county's own trend. The gray band marks ±2.</div>
+    <div class="fignote">0 means a normal quarter for that county. Each unit is roughly one standard deviation, so the gray band (±2) is ordinary variation and anything far outside it is unusual.</div>
   </figure>
   <figure>
-    <figcaption><b>Table 5.</b> All flagged county-quarters, strongest first</figcaption>
+    <figcaption><b>Table 4.</b> All flagged county-quarters, strongest first</figcaption>
     <div class="tblwrap"><table id="anTbl"></table></div>
     <div class="fignote">Other flags are leads to investigate, not confirmed outages. Quarterly averages dilute short events, so the method finds disruptions that are large or long. Applied to weekly or daily data, the same approach is a practical early-warning signal.</div>
   </figure>
@@ -219,7 +253,7 @@ footer{display:grid;gap:6px;border-top:1px solid var(--rule);padding-top:16px;co
     </div>
     <div>
       <h3>Models</h3>
-      <p>Table 2 regressions are ordinary least squares at the county level, restricted to counties with at least 200 tests in both 2019 and the latest window, with state-clustered standard errors. Figure 4's convergence slope comes from regressing log growth on log 2019 speed with income, rurality and state controls. The disruption detector removes the national quarterly mean from each log series, fits each county's own quadratic trend, and scales residuals by 1.4826 × the median absolute deviation.</p>
+      <p>Figure 4 and Table A come from ordinary least squares regressions at the county level, restricted to counties with at least 200 tests in both 2019 and the latest window, with state-clustered standard errors. Figure 5's convergence slope comes from regressing log growth on log 2019 speed with income, rurality and state controls. The disruption detector removes the national quarterly mean from each log series, fits each county's own quadratic trend, and scales residuals by 1.4826 × the median absolute deviation.</p>
     </div>
   </div>
 </section>
@@ -336,7 +370,7 @@ function drawMap(){
 }
 segBind('mapSeg',k=>{mapKey=k;drawMap();});
 
-/* ---------- Table 2 ---------- */
+/* ---------- Table A ---------- */
 function fillReg(){
   const R=D.regression; $('#regN').textContent=R[0].n.toLocaleString();
   const gap=b=>`${Math.round((Math.exp(b)-1)*100)}%`;
@@ -345,7 +379,18 @@ function fillReg(){
   $('#regTbl').innerHTML=h+'</tbody>';
 }
 
-/* ---------- Figure 4: convergence scatter ---------- */
+/* ---------- Figure 4: rural gap bars ---------- */
+const GAPLAB={'rurality only':'As measured, no adjustment','+ income':'Counties with the same income','+ income + state':'Same income, same state','+ income + density + state':'Same income, same state, same population density'};
+function drawGap(){
+  const R=D.regression, host=$('#gap'), rowH=48;
+  const f=frame(host,R.length*rowH+16,{t:4,r:56,b:12,l:0}); const x=lin(0,50,0,f.iw);
+  R.forEach((r,i)=>{ const v=(1-Math.exp(r.rucc9))*100, y0=f.m.t+i*rowH, last=i===R.length-1;
+    txt(f.svg,0,y0+14,GAPLAB[r.spec],{class:last?'lbl-strong':'lbl'});
+    el('rect',{x:0,y:y0+21,width:Math.max(1,x(v)),height:16,fill:css(last?'--accent':'--o1'),rx:2},f.svg);
+    txt(f.svg,x(v)+8,y0+34,Math.round(v)+'% slower',{class:'lbl-strong'}); });
+}
+
+/* ---------- Figure 5: convergence scatter ---------- */
 const GC={ 'Large metro':'--o1','Smaller metro':'--o2','Nonmetro town':'--o3','Rural':'--o4'};
 function drawConv(){
   $('#convLegend').innerHTML=Object.keys(GC).map(g=>`<span><i class="sq" style="background:var(${GC[g]});border-radius:50%"></i>${g}</span>`).join('');
@@ -363,10 +408,10 @@ function drawConv(){
     const dot=el('circle',{cx,cy,r,fill:css(GC[C.grp[i]]),'fill-opacity':.7,stroke:css('--panel'),'stroke-width':.8},f.svg);
     dot.addEventListener('mousemove',ev=>showTip(`<b>${C.county_name[i]}, ${C.state_abbr[i]}</b><br>${fmt(C.med_d_19[i])} → <b>${fmt(C.med_d[i])} Mbps</b> (${g.toFixed(1)}×)<br><span style="color:var(--muted)">${C.grp[i]} · pop. ${C.pop_2020[i].toLocaleString()}</span>`,ev));
     dot.addEventListener('mouseleave',hideTip); });
-  const cv=D.convergence; $('#convNote').textContent=`Dot size is population. Holding income, rurality and state fixed, a county that started with 10% lower speed in 2019 grew ${(Math.abs(cv.beta)*10).toFixed(1)}% faster (slope ${cv.beta.toFixed(2)}, SE ${cv.beta_se.toFixed(2)}, ${cv.n.toLocaleString()} counties). Income added no further catch-up (${cv.income.toFixed(2)}, SE ${cv.income_se.toFixed(2)}).`;
+  const cv=D.convergence; $('#convNote').textContent=`Dot size is population. Compared with counties of the same type, income and state, one that started 10% slower in 2019 improved about ${(Math.abs(cv.beta)*10).toFixed(0)}% more since. Higher-income counties did not catch up any faster. Based on ${cv.n.toLocaleString()} counties.`;
 }
 
-/* ---------- Table 3 ---------- */
+/* ---------- Table 2 ---------- */
 function fillInc(){
   const G=D.income_grid, gs=['Large metro','Smaller metro','Nonmetro town','Rural']; const b=D.income_q_bounds;
   const vals=G.map(r=>r.med_d), lo=Math.min(...vals), hi=Math.max(...vals);
@@ -374,17 +419,17 @@ function fillInc(){
   let h='<thead><tr><th>County type</th>'+[1,2,3,4,5].map(q=>`<th>Q${q}</th>`).join('')+'</tr></thead><tbody>';
   gs.forEach(g=>{ h+=`<tr><td>${g}</td>`+[1,2,3,4,5].map(q=>{ const r=G.find(x=>x.grp===g&&x.inc_q===q); return r?`<td class="heat" style="${shade(r.med_d)}" title="${r.n} counties">${Math.round(r.med_d)}</td>`:'<td>–</td>'; }).join('')+'</tr>'; });
   $('#incTbl').innerHTML=h+'</tbody>';
-  $('#incNote').textContent=`Income quintiles of county median household income: Q1 below $${(b[0]/1000).toFixed(0)}K, Q5 above $${(b[3]/1000).toFixed(0)}K. Darker cells are faster. Within large metros, the poorest counties lag; among rural counties, income makes little difference.`;
+  $('#incNote').textContent=`Counties split into five equal groups by median household income: Q1 below $${(b[0]/1000).toFixed(0)}K, Q5 above $${(b[3]/1000).toFixed(0)}K. Darker cells are faster. In large metros the poorest counties lag, but among rural counties income makes little difference: at every income level, rural counties are the slowest.`;
 }
 
-/* ---------- Table 4 ---------- */
+/* ---------- Table 3 ---------- */
 function fillLag(){
   let h='<thead><tr><th>County</th><th>Population</th><th>Median income</th><th>Download 2019</th><th>Download now</th><th>100/20 share now</th></tr></thead><tbody>';
   D.laggards.forEach(r=>{ h+=`<tr><td>${r.county_name}, ${r.state_abbr}</td><td>${r.pop_2020.toLocaleString()}</td><td>$${(r.median_income/1000).toFixed(0)}K</td><td>${fmt(r.med_d_19)}</td><td>${fmt(r.med_d)}</td><td>${pct(r.s100)}</td></tr>`; });
   $('#lagTbl').innerHTML=h+'</tbody>';
 }
 
-/* ---------- Figure 5 + Table 5 ---------- */
+/* ---------- Figure 6 + Table 4 ---------- */
 let anKey='37021';
 function drawAnom(){
   const S=D.anom.series[anKey];
@@ -396,7 +441,7 @@ segBind('anSeg',k=>{anKey=k;drawAnom();});
 const zf=v=>{const s=v.toFixed(1); return s==='-0.0'?'0.0':s.replace('-','−');};
 function fillAn(){
   const A=D.anom; $('#anN').textContent=A.n_counties.toLocaleString(); $('#anF').textContent=A.n_flagged; $('#anC').textContent=A.n_cells.toLocaleString();
-  let h='<thead><tr><th>County</th><th>Quarter</th><th>Tests</th><th>z tests</th><th>z download</th><th>z latency</th><th>Known event</th></tr></thead><tbody>';
+  let h='<thead><tr><th>County</th><th>Quarter</th><th>Tests</th><th>Tests vs. normal</th><th>Download vs. normal</th><th>Latency vs. normal</th><th>Known event</th></tr></thead><tbody>';
   A.flagged.forEach(r=>{ h+=`<tr${r.event?' class="final"':''}><td>${r.county_name}, ${r.state_abbr}</td><td>${qlab(r.q)}</td><td>${r.tests.toLocaleString()}</td><td>${zf(r.z_tests)}</td><td>${zf(r.z_med_d)}</td><td>${zf(r.z_med_lat)}</td><td>${r.event||''}</td></tr>`; });
   $('#anTbl').innerHTML=h+'</tbody>';
 }
@@ -409,21 +454,27 @@ function fillText(){
   const avg=(a,idx)=>idx.reduce((s,i)=>s+a[i],0)/idx.length; const n=g(GRP[0]).q.length, B=[0,1,2,3], L=[n-4,n-3,n-2,n-1];
   const r0=avg(g('4 Rural').med_d,B), r1=avg(g('4 Rural').med_d,L), m0=avg(g('1 Large metro').med_d,B), m1=avg(g('1 Large metro').med_d,L);
   const s0=avg(g('4 Rural').share_100_20,B), s1=avg(g('4 Rural').share_100_20,L);
-  const R=D.regression, gap=b=>Math.round((1-Math.exp(b))*100);
-  const F=[
-    `<b>Home broadband got about ${(MF.fixed_26/MF.fixed_19).toFixed(1)} times faster, and mobile about ${(MF.mobile_26/MF.mobile_19).toFixed(0)} times.</b> The national median home download rose from ${fmt(MF.fixed_19)} Mbps in 2019 to ${fmt(MF.fixed_26)} Mbps in the latest four quarters. Mobile went from ${fmt(MF.mobile_19)} to ${fmt(MF.mobile_26)} Mbps as 5G rolled out, closing most of its gap with home broadband.`,
-    `<b>Rural counties caught up in relative terms, but not in absolute terms.</b> Rural home broadband went from ${fmt(r0)} to ${fmt(r1)} Mbps (${(r1/r0).toFixed(0)}×), against ${(m1/m0).toFixed(1)}× in large metros. Rural speeds went from ${pct(r0/m0)} to ${pct(r1/m1)} of large-metro speeds, yet the absolute gap widened from ${fmt(m0-r0)} to ${fmt(m1-r1)} Mbps.`,
-    `<b>Most rural speed tests now clear the federal benchmark.</b> The share of rural tests on connections meeting 100/20 rose from ${pct(s0)} to ${pct(s1)}.`,
-    `<b>The remaining gap is about density, not rurality or income.</b> The most rural counties run ${gap(R[0].rucc9)}% slower than large metros. Adding income barely moves that and state fixed effects trim it a little, but adding population density shrinks it to ${gap(R.at(-1).rucc9)}%, and income stops mattering. Wiring sparse areas costs more per home.`,
-    `<b>The slowest counties improved fastest.</b> The convergence slope is ${D.convergence.beta.toFixed(2)}: a county that started 10% slower grew about ${(Math.abs(D.convergence.beta)*10).toFixed(0)}% faster than otherwise similar counties.`,
-    `<b>Speed-test surges can flag network disruptions.</b> A simple rule (test volume far above trend while speed falls or latency rises) flagged ${D.anom.n_flagged} of ${D.anom.n_cells.toLocaleString()} county-quarters, including both North Carolina counties hit hardest by Hurricane Helene in late 2024.`
-  ];
-  $('#findings').innerHTML=F.map(f=>`<li>${f}</li>`).join('');
+  const R=D.regression, gap=b=>Math.round((1-Math.exp(b))*100), A=D.anom;
+  $('#exQ').innerHTML=`<b>The question:</b> has rural America closed its broadband gap, what still holds it back, and can speed tests spot network outages?`;
+  $('#blKpis').innerHTML=`<div><dt>${fmt(r0)} → ${fmt(r1)} Mbps</dt><dd>typical rural home download speed, 2019 vs. the latest year</dd></div>
+    <div><dt>${pct(s0)} → ${pct(s1)}</dt><dd>share of rural speed tests meeting the federal 100/20 broadband benchmark</dd></div>
+    <div><dt>${A.n_flagged}</dt><dd>likely outages flagged from speed tests alone, including Hurricane Helene in North Carolina</dd></div>`;
+  $('#blPoints').innerHTML=[
+    `<b>Everyone got much faster.</b> Typical home broadband rose from ${fmt(MF.fixed_19)} to ${fmt(MF.fixed_26)} Mbps (${(MF.fixed_26/MF.fixed_19).toFixed(1)}×) and mobile from ${fmt(MF.mobile_19)} to ${fmt(MF.mobile_26)} Mbps (${(MF.mobile_26/MF.mobile_19).toFixed(0)}×) as 5G rolled out.`,
+    `<b>Rural areas caught up in percentage terms, but the gap in Mbps grew.</b> Rural speeds went from ${pct(r0/m0)} to ${pct(r1/m1)} of big-city speeds, yet the difference widened from ${fmt(m0-r0)} to ${fmt(m1-r1)} Mbps because cities kept getting faster too.`,
+    `<b>The remaining gap is about how spread out people are, not income.</b> The most rural counties are ${gap(R[0].rucc9)}% slower than large metros. Comparing counties with the same income barely changes that, but comparing counties with similar population density cuts it to ${gap(R.at(-1).rucc9)}%. Wiring sparse areas simply costs more per home.`,
+    `<b>Speed tests work as an outage alarm.</b> Bursts of tests alongside falling speeds flagged ${A.n_flagged} of ${A.n_cells.toLocaleString()} county-quarters, including the two North Carolina counties hit hardest by Hurricane Helene in late 2024.`
+  ].map(x=>`<li>${x}</li>`).join('');
+  $('#blRec').innerHTML=`<b>What to do:</b> aim the remaining build-out money at sparse, high-cost areas and judge projects by cost per home connected, not by local income. Track the lagging counties in Table 3 by name. And run the speed-test alarm on weekly data so providers and emergency managers see outages within days, not quarters.`;
+  $('#s1lead').textContent=`home broadband got about ${(MF.fixed_26/MF.fixed_19).toFixed(1)} times faster since 2019, and mobile about ${(MF.mobile_26/MF.mobile_19).toFixed(0)} times, closing most of its gap with home broadband.`;
+  $('#s2lead').textContent=`rural counties improved the most in percentage terms, ${(r1/r0).toFixed(0)}× against ${(m1/m0).toFixed(1)}× in large metros, and ${pct(s1)} of rural tests now meet the federal benchmark. But because cities kept improving too, rural homes are still ${fmt(m1-r1)} Mbps behind.`;
+  $('#s3lead').innerHTML=`<b>In short:</b> because rural homes are spread out, not because rural areas are poorer. The most rural counties are ${gap(R[0].rucc9)}% slower than large metros. Among counties with similar population density, the gap falls to ${gap(R.at(-1).rucc9)}%, and income no longer matters.`;
 }
 
-function drawAll(){ drawNat(); drawGrp(); drawMap(); drawConv(); drawAnom(); }
+function drawAll(){ drawNat(); drawGrp(); drawMap(); drawGap(); drawConv(); drawAnom(); }
 fillText(); fillGrpTbl(); fillReg(); fillInc(); fillLag(); fillAn(); drawAll();
 let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(drawAll,120);});
+document.querySelector('details.tech').addEventListener('toggle',drawAll);
 document.fonts && document.fonts.ready.then(drawAll);
 </script>
 
