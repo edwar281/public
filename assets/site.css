@@ -56,7 +56,7 @@ h1 { font: 500 clamp(2.2rem, 5vw, 3.4rem)/1.08 var(--f-display); letter-spacing:
 .hero h1 small { display: block; font: 400 1.05rem/1.4 var(--f-body); color: var(--ink-soft); margin-top: 14px; letter-spacing: 0; }
 .hero .lead { margin-bottom: 28px; }
 .portrait { margin: 0; justify-self: end; width: 100%; max-width: 440px; }
-.banner { margin: 0 0 40px; }
+.banner { margin: -32px 0 40px; }
 .banner img { display: block; width: 100%; height: auto; aspect-ratio: 5 / 1; object-fit: cover; border-radius: 8px; }
 .portrait img { display: block; width: 100%; height: auto; border-radius: 8px; border: 1px solid var(--rule); }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin: 0; }
