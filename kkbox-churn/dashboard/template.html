@@ -380,8 +380,8 @@ function fillExec(){
     `<b>Next month's leavers can be found in advance.</b> The riskiest tenth of customers, scored before the month began, held ${pct(cap)} of the month's churners, ${Math.round(lift)} times better than picking at random. Billing history does nearly all the work; 392 million rows of listening data add almost nothing.`
   ].map(x=>`<li>${x}</li>`).join('');
   $('#blRec').innerHTML=`<b>What to do:</b> make auto-renew the default at sign-up. Put retention offers in the weeks before a customer's first renewal. Judge free-trial campaigns on customers still paying months later, not on sign-ups. Each month, score the customer base and contact the riskiest 10%, and re-check the model's predicted churn rate against a small sample of actual results so forecasts stay accurate.`;
-  $('#s1lead').innerHTML=`<b>In short:</b> most customers who leave do so at their first renewal, and customers on auto-renew rarely leave at all. After a year, ${pct(r.billing['Auto-renew'])} of auto-renew customers were still paying, against ${pct(r.billing['Manual renewal'])} of those who renewed by hand.`;
-  $('#s2lead').innerHTML=`<b>In short:</b> yes. Contacting the riskiest 10% of subscribers, as ranked before the month began, reaches ${pct(cap)} of that month's churners, ${Math.round(lift)} times better than random. Billing history drives nearly all of that accuracy.`;
+  $('#s1lead').innerHTML=`Most customers who leave do so at their first renewal, and customers on auto-renew rarely leave at all. After a year, ${pct(r.billing['Auto-renew'])} of auto-renew customers were still paying, against ${pct(r.billing['Manual renewal'])} of those who renewed by hand.`;
+  $('#s2lead').innerHTML=`Contacting the riskiest 10% of subscribers, as ranked before the month began, reaches ${pct(cap)} of that month's churners, ${Math.round(lift)} times better than random. Billing history drives nearly all of that accuracy.`;
 }
 
 function drawAll(){ drawKM(); drawHazard(); drawForest(); drawGains('#gains',280); drawCal(); drawShap(); drawDeciles(); }

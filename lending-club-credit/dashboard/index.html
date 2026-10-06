@@ -408,7 +408,7 @@ function fillExec(){
     `<b>Each grade mixed good and bad borrowers at one price.</b> In grade D, the safest fifth of borrowers earned investors ${pct(d[0].roi,1)} while the riskiest fifth lost ${pct(-d[4].roi,1)}, though both paid almost the same rate.`,
     `<b>The money-losing loans were predictable from the application.</b> Turning down the riskiest ${b.k}% would have raised investor profit on 2015 loans from ${money(P.base_profit)} to ${money(P.base_profit+b.uplift)}. Turning loans down by grade alone adds almost nothing.`
   ].map(x=>`<li>${x}</li>`).join('');
-  $('#s3lead').innerHTML=`<b>In short: yes.</b> Scored on information from the application alone, the riskiest ${b.k}% of 2015 loans lost investors money even after their higher interest rates. Turning them down would have added ${money(b.uplift)} of profit, while turning loans down by grade alone adds almost nothing.`;
+  $('#s3lead').innerHTML=`Scored on information from the application alone, the riskiest ${b.k}% of 2015 loans lost investors money even after their higher interest rates. Turning them down would have added ${money(b.uplift)} of profit, while turning loans down by grade alone adds almost nothing.`;
   $('#blRec').innerHTML=`<b>What to do:</b> keep the grade, but add a model score as a second screen. Decline the riskiest ${b.k}% of applicants, use the score to charge riskier borrowers more within each grade, and track each new month of loans against earlier ones so rising losses are caught early.`;
 }
 
