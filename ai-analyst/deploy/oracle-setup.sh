@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
-# One-time setup on a fresh Oracle Cloud Always Free Ubuntu VM (Ampere A1, arm64).
+# One-time setup on a fresh Oracle Cloud Always Free Ubuntu VM (regular or Minimal image) (Ampere A1, arm64).
 # Usage: curl -fsSL https://raw.githubusercontent.com/edwar281/public/main/ai-analyst/deploy/oracle-setup.sh | bash
 set -euo pipefail
+
+echo "== Installing basic tools"
+# Ubuntu Minimal images leave out git and the iptables tools.
+sudo apt-get update -q
+sudo apt-get install -y -q ca-certificates curl git iptables
 
 echo "== Installing Docker"
 if ! command -v docker >/dev/null; then
