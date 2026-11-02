@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broadband Analyst | Will Edwards</title>
+<meta name="description" content="An AI analyst that writes SQL and Python against seven years of US internet speed tests, and shows every step.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f5f8b'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='17' fill='%23fff' text-anchor='middle'%3EWE%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="container">
+    <a class="brand" href="https://edwar281.github.io/public/">Will Edwards, PhD</a>
+    <a class="back" href="https://edwar281.github.io/public/projects.html">All projects</a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="intro">
+    <p class="eyebrow">AI analyst &middot; Ookla speed tests, 2019&ndash;2026</p>
+    <h1>Ask the broadband data</h1>
+    <p class="lead">An AI analyst that answers questions about US internet speeds. It writes SQL and Python, runs them, reads the results and explains what it found. You see every step.</p>
+    <p class="muted">It works from 594 million speed tests summarized by county and quarter. Pick a question to start.</p>
+  </section>
+
+  <section class="ask" aria-label="Ask a question">
+    <div class="chips" id="chips" role="list"></div>
+    <form id="ask-form" class="ask-form">
+      <label class="sr-only" for="question">Your question</label>
+      <input id="question" name="question" maxlength="500" autocomplete="off"
+             placeholder="Or ask your own, e.g. Which Colorado counties have the slowest home internet?">
+      <button type="submit" class="btn" id="ask-btn">Ask</button>
+    </form>
+    <p class="status" id="status" aria-live="polite"></p>
+  </section>
+
+  <section id="run" class="run" aria-live="polite"></section>
+
+  <section class="how">
+    <h2 class="section-title">How it works</h2>
+    <ol class="flow">
+      <li>Gemini plans the analysis. A FastAPI service holds the conversation and gives the model two tools, one for SQL and one for Python.</li>
+      <li>Each piece of code runs in a separate container that has no internet access, a read-only disk, and strict time and memory limits. Every job starts from a clean process.</li>
+      <li>The results go back to the model, which reads them, corrects its own errors and writes the answer. Token counts and timings for the model and the code appear under each answer.</li>
+    </ol>
+    <p class="muted small">The example questions replay a saved live run, so they load instantly. Your own questions run live on Gemini's free tier, which has a daily limit. <span id="stats"></span></p>
+    <p class="small">Runs on an Oracle Cloud free-tier server in Docker. <a href="https://github.com/edwar281/public/tree/main/ai-analyst">Code on GitHub</a> &middot; <a href="https://edwar281.github.io/public/ookla-broadband/dashboard/">The broadband analysis this data comes from</a></p>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="container">
+    <span>Data: Speedtest&reg; by Ookla&reg; Global Fixed and Mobile Network Performance Maps (CC BY-NC-SA 4.0); USDA ERS; US Census.</span>
+    <span>Built by Will Edwards. Assisted by Claude.</span>
+  </div>
+</footer>
+
+<template id="step-tpl">
+  <article class="step">
+    <header><span class="badge"></span><span class="purpose"></span></header>
+    <details class="code"><summary>Show code</summary><pre><code></code></pre></details>
+    <div class="output"><p class="pending">Running&hellip;</p></div>
+  </article>
+</template>
+
+<script src="app.js"></script>
+</body>
+</html>

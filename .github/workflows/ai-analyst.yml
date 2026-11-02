@@ -1,0 +1,39 @@
+# Tests every push that touches ai-analyst/. Deploys to the Oracle VM on main when the
+# ORACLE_HOST, ORACLE_USER and ORACLE_SSH_KEY repository secrets are set.
+name: ai-analyst
+
+on:
+  push:
+    paths: ["ai-analyst/**", ".github/workflows/ai-analyst.yml"]
+  pull_request:
+    paths: ["ai-analyst/**"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-analyst
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install -r api/requirements.txt -r runner/requirements.txt pytest
+      - run: python -m pytest -q tests
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        env:
+          HOST: ${{ secrets.ORACLE_HOST }}
+          USER: ${{ secrets.ORACLE_USER }}
+          KEY: ${{ secrets.ORACLE_SSH_KEY }}
+        run: |
+          if [ -z "$HOST" ]; then echo "No ORACLE_HOST secret; skipping deploy."; exit 0; fi
+          mkdir -p ~/.ssh && echo "$KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
+          ssh -i ~/.ssh/id -o StrictHostKeyChecking=accept-new "$USER@$HOST" \
+            'cd ~/public && git pull --ff-only && cd ai-analyst && docker compose up -d --build && docker image prune -f'
