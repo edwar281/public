@@ -66,6 +66,7 @@ h1 { font: 500 clamp(2rem, 5vw, 3rem)/1.1 var(--f-display); margin: 0 0 16px; le
 .error { background: var(--error-soft); color: var(--error); border-radius: 6px; padding: 10px 12px; font: 400 0.8rem/1.5 var(--f-mono); white-space: pre-wrap; }
 .error-note { font-size: 0.85rem; color: var(--ink-soft); }
 .chart { max-width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
+.chart.plot { display: block; width: 100%; min-height: 380px; margin: 8px 0; }
 .table-wrap { overflow: auto; max-height: 320px; border: 1px solid var(--rule); border-radius: 6px; }
 table { border-collapse: collapse; width: 100%; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
 th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--rule); white-space: nowrap; }

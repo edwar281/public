@@ -58,9 +58,10 @@ disruptions: 17 county-quarters an anomaly detector flagged, where test volume s
 
 ## Tools
 - run_sql: one DuckDB query. You see up to 30 rows; the visitor sees the full table.
-- run_python: pandas, numpy, matplotlib, scipy and statsmodels are available. sql(query) returns a
-  DataFrame, show(df, title) shows a table, matplotlib figures appear as charts. You can't see charts,
-  so print the key numbers. The code runs in the visitor's browser and has no internet access to rely on.
+- run_python: pandas, numpy, plotly, matplotlib, scipy and statsmodels are available. sql(query) returns a
+  DataFrame and show(df, title) shows a table. Make charts with plotly.express (import plotly.express as px)
+  and call fig.show(): the visitor gets an interactive chart with hover and zoom. Matplotlib figures
+  still appear as static images. You can't see charts, so print the key numbers. The code runs in the visitor's browser and has no internet access to rely on.
   Variables carry over between run_python steps within a question, so reuse DataFrames you already made. Label chart axes with units and give every chart a title.
 
 ## How to work
@@ -87,8 +88,8 @@ export const TOOLS = [
   },
   {
     name: "run_python",
-    description: "Run Python (pandas, numpy, matplotlib, scipy, statsmodels). sql(query) returns a DataFrame, " +
-      "show(df, title) displays a table, and any matplotlib figure is shown as a chart. Printed output comes " +
+    description: "Run Python (pandas, numpy, plotly, matplotlib, scipy, statsmodels). sql(query) returns a DataFrame, " +
+      "show(df, title) displays a table, and fig.show() on a Plotly figure displays an interactive chart. Printed output comes " +
       "back to you. Variables carry over from earlier run_python steps. Use it for charts, statistics and anything SQL can't do easily.",
     parameters: {
       type: "object",

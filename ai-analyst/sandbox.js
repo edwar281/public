@@ -33,9 +33,20 @@ async function init() {
   return py;
 }
 
+// Pure-Python packages that may come from PyPI when Pyodide doesn't ship them. Nothing else is installed.
+const FROM_PYPI = new Set(["plotly", "narwhals"]);
+
 async function loadMissing(py, name) {
   try {
     await py.loadPackage(name, { messageCallback: () => {}, errorCallback: () => {} });
+    py.pyimport(name);
+    return true;
+  } catch {
+    if (!FROM_PYPI.has(name)) return false;
+  }
+  try {
+    await py.loadPackage("micropip", { messageCallback: () => {} });
+    await py.pyimport("micropip").install(name);
     py.pyimport(name);
     return true;
   } catch {
@@ -56,6 +67,7 @@ self.onmessage = async (ev) => {
     if (lang === "python") {
       // Loads scipy, statsmodels and the like only when the code imports them.
       await py.loadPackagesFromImports(code, { messageCallback: () => {} });
+      if (/\bplotly\b/.test(code)) await loadMissing(py, "plotly");
     }
     let result = JSON.parse(runFn(lang, code));
     // Libraries such as pandas import scipy on their own (for example corr(method="spearman")),

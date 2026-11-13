@@ -17,7 +17,10 @@ const SCRIPT = [
     "print(f'slope={slope:.2f} rho={rho:.2f}')",
     "show(df.tail(3), 'Latest quarters')",
     "import matplotlib.pyplot as plt",
-    "plt.plot(df.quarter, df.median_download_mbps); plt.title('National home download speed')",
+    "plt.plot(df.quarter, df.median_download_mbps); plt.title('National home download speed'); plt.show()",
+    "import plotly.express as px",
+    "fig = px.line(df, x='quarter', y='median_download_mbps', title='Interactive national speed')",
+    "fig.show()",
   ].join("\n") }),
   call("run_python", { purpose: "Spin forever", code: "while True:\n    pass" }),
   call("run_sql", { purpose: "Check the runner recovered", query: "SELECT count(*) AS counties FROM counties" }),
@@ -70,6 +73,9 @@ try {
   assert.match(await py.innerText(), /slope=[\d.]+ rho=[\d.]+/);
   assert.match(await py.innerText(), /Latest quarters/);
   assert.equal(await py.locator("img.chart").count(), 1);
+  assert.doesNotMatch(await py.innerText(), /UserWarning/);
+  await py.locator(".chart.plot .main-svg").first().waitFor({ timeout: 60_000 });
+  assert.match(await py.locator(".chart.plot").innerText(), /Interactive national speed/);
   assert.match(await steps.nth(3).locator(".output").innerText(), /Stopped after 15 seconds/);
   assert.match(await steps.nth(4).locator(".output").innerText(), /3,23\d/);
   assert.match(await steps.nth(5).locator(".error").innerText(), /disabled by configuration|Permission|not exist|No files/i);
@@ -80,7 +86,7 @@ try {
   const lastToolReply = (n) => requests[n].at(-1).parts[0].functionResponse.response.result;
   assert.equal(requests.length, 7);
   assert.match(lastToolReply(1), /Large metro,60/);
-  assert.match(lastToolReply(3), /slope=.*1 chart\(s\) shown/s);
+  assert.match(lastToolReply(3), /slope=.*2 chart\(s\) shown/s);
   assert.match(lastToolReply(4), /ERROR:\nStopped after 15 seconds/);
   assert.equal(requests[1][1].parts[0].thoughtSignature, "sig", "the model's own turn goes back unchanged");
 

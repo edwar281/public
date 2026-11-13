@@ -17,11 +17,11 @@ browser (GitHub Pages) ──> Cloudflare Worker ──> Gemini API (free tier)
 | Piece | Job |
 |---|---|
 | `index.html`, `app.js` | The page and the agent loop. It sends the conversation to the Worker, runs each step the model asks for, sends the results back, and streams every step to the screen. |
-| `sandbox.js`, `runtime.py` | The code runner. A Web Worker loads Pyodide with DuckDB, pandas and matplotlib, puts the four tables in memory, and runs each SQL query or Python snippet. Python variables carry over between the steps of one question and are cleared for the next. The page stops the runner and starts a new one if a step runs past 30 seconds. scipy and statsmodels load the first time the code needs them. |
+| `sandbox.js`, `runtime.py` | The code runner. A Web Worker loads Pyodide with DuckDB, pandas and matplotlib, puts the four tables in memory, and runs each SQL query or Python snippet. Python variables carry over between the steps of one question and are cleared for the next. The page stops the runner and starts a new one if a step runs past 30 seconds. scipy, statsmodels and plotly load the first time the code needs them, and Plotly charts are drawn on the page with Plotly.js, so visitors can hover and zoom. |
 | `worker/worker.js` | A Cloudflare Worker that keeps the Gemini key off the page. It adds the system prompt and the two tool definitions, checks the request, applies a per-visitor limit, and only answers pages on the allowed origins. |
 | `saved-runs.json` | Saved live runs of the six example questions, so a click replays instantly and costs nothing. |
 
-The model has two tools: `run_sql` (one DuckDB query) and `run_python` (with `sql()`, `show()` and matplotlib). It sees up to 30 rows of each result plus any printed output, and gets errors back so it can fix its own code. Each question is capped at 8 steps.
+The model has two tools: `run_sql` (one DuckDB query) and `run_python` (with `sql()`, `show()`, Plotly for interactive charts, and matplotlib). It sees up to 30 rows of each result plus any printed output, and gets errors back so it can fix its own code. Each question is capped at 8 steps.
 
 Because the AI-written code runs in the visitor's own browser tab, no server ever executes it.
 

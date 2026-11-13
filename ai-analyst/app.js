@@ -133,7 +133,8 @@ function summarizeResult(r) {
     const title = t.title ? ` '${t.title}'` : "";
     parts.push(`Table${title}: ${t.row_count} rows${t.row_count > 30 ? " (first 30 shown)" : ""}\n${lines.join("\n")}`);
   });
-  if ((r.images || []).length) parts.push(`${r.images.length} chart(s) shown to the visitor.`);
+  const charts = (r.images || []).length + (r.plots || []).length;
+  if (charts) parts.push(`${charts} chart(s) shown to the visitor.`);
   return (parts.join("\n\n") || "The code ran and produced no output.").slice(0, RESULT_CHARS);
 }
 
@@ -267,6 +268,33 @@ function renderTable(t) {
   return frag;
 }
 
+const PLOTLY_JS = "https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.0.1/plotly.min.js";
+let plotlyReady = null;
+
+function loadPlotly() {
+  plotlyReady ||= new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = PLOTLY_JS;
+    s.onload = () => resolve(window.Plotly);
+    s.onerror = () => { plotlyReady = null; reject(new Error("The chart library didn't load.")); };
+    document.head.append(s);
+  });
+  return plotlyReady;
+}
+
+function renderPlot(spec) {
+  const box = el("div", "chart plot");
+  loadPlotly()
+    .then((Plotly) => {
+      const fig = typeof spec === "string" ? JSON.parse(spec) : spec;
+      const layout = { ...(fig.layout || {}), autosize: true };
+      delete layout.width;
+      return Plotly.newPlot(box, fig.data || [], layout, { responsive: true, displaylogo: false });
+    })
+    .catch((err) => box.replaceChildren(el("p", "error", `This chart couldn't be drawn: ${err.message}`)));
+  return box;
+}
+
 function renderResult(out, r) {
   out.replaceChildren();
   if (r.stdout) out.append(el("pre", "stdout", r.stdout));
@@ -276,12 +304,13 @@ function renderResult(out, r) {
     img.alt = "Chart produced by this step";
     out.append(img);
   });
+  (r.plots || []).forEach((spec) => out.append(renderPlot(spec)));
   (r.tables || []).forEach((t) => out.append(renderTable(t)));
   if (!r.ok) {
     out.append(el("div", "error", r.error || "This step failed."));
     out.append(el("p", "error-note", "The analyst sees this error and can correct its code in the next step."));
   }
-  if (r.ok && !r.stdout && !(r.images || []).length && !(r.tables || []).length) {
+  if (r.ok && !r.stdout && !(r.images || []).length && !(r.plots || []).length && !(r.tables || []).length) {
     out.append(el("p", "pending", "Ran with no output."));
   }
 }

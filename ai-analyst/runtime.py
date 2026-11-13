@@ -28,6 +28,44 @@ plt.rcParams.update({
     "axes.prop_cycle": matplotlib.cycler(color=COLORS),
 })
 
+# plt.show() has nothing to show in a browser worker; figures are collected after each step instead.
+plt.show = lambda *args, **kwargs: None
+
+MAX_PLOTS = 4
+MAX_PLOT_CHARS = 1_500_000
+_plots = []  # interactive Plotly figures from the current step, as JSON
+
+
+def _keep_plot(fig):
+    if len(_plots) < MAX_PLOTS:
+        spec = fig.to_json()
+        if len(spec) <= MAX_PLOT_CHARS:
+            _plots.append(spec)
+
+
+def _setup_plotly():
+    """Send fig.show() to the page as an interactive chart, styled like the site."""
+    import plotly.basedatatypes as bdt
+    import plotly.graph_objects as go
+    import plotly.io as pio
+
+    if getattr(bdt.BaseFigure.show, "_analyst", False):
+        return
+    pio.templates["analyst"] = go.layout.Template(layout=go.Layout(
+        colorway=COLORS, font={"family": "system-ui, sans-serif", "size": 13},
+        paper_bgcolor="#ffffff", plot_bgcolor="#ffffff", hovermode="x unified",
+        xaxis={"gridcolor": "#e6e6e6", "zeroline": False}, yaxis={"gridcolor": "#e6e6e6", "zeroline": False},
+        margin={"l": 60, "r": 20, "t": 60, "b": 50},
+    ))
+    pio.templates.default = "plotly_white+analyst"
+
+    def show(self, *args, **kwargs):
+        _keep_plot(self)
+
+    show._analyst = True
+    bdt.BaseFigure.show = show
+
+
 con = None
 
 
@@ -73,9 +111,14 @@ def run(lang, code):
     tables = []
     result = {"ok": True, "stdout": "", "tables": [], "images": [], "error": None}
 
-    def show(df, title=None):
-        """Display a DataFrame as a table in the answer."""
-        tables.append(_table(df, title))
+    _plots.clear()
+
+    def show(obj, title=None):
+        """Display a DataFrame as a table, or a Plotly figure as an interactive chart."""
+        if hasattr(obj, "to_plotly_json"):
+            _keep_plot(obj)
+        else:
+            tables.append(_table(obj, title))
 
     try:
         if lang == "sql":
@@ -84,6 +127,8 @@ def run(lang, code):
             buf = io.StringIO()
             ns = _session
             ns.update(sql=sql, show=show, pd=pd, np=np, plt=plt)
+            if "plotly" in code:
+                _setup_plotly()
             with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
                 exec(compile(code, "<analysis>", "exec"), ns)
             out = buf.getvalue()
@@ -98,5 +143,6 @@ def run(lang, code):
     finally:
         plt.close("all")
     result["tables"] = tables[:4]
+    result["plots"] = list(_plots)
     return json.dumps(result)
 
