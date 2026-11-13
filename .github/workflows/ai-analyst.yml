@@ -58,7 +58,7 @@ jobs:
             echo "No Cloudflare secrets yet; skipping the Worker deploy."; exit 0
           fi
           # Shows which accounts the token can reach; the configured account appears masked as ***.
-          npx --yes wrangler@4.149.0 whoami
+          npx --yes wrangler@4.149.0 whoami || true
           npx --yes wrangler@4.149.0 deploy
 
   record:
