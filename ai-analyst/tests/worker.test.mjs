@@ -115,10 +115,21 @@ test("explains Gemini's quota errors and hides other upstream errors", async () 
   const quota = await worker.fetch(chat(question), env);
   assert.equal(quota.status, 429);
   assert.match((await quota.json()).error, /free allowance/);
-  mockGemini(() => new Response("internal details", { status: 500 }));
+  const calls = mockGemini(() => new Response(JSON.stringify({ error: { message: "API key not valid." } }), { status: 400 }));
   const broken = await worker.fetch(chat(question), env);
   assert.equal(broken.status, 502);
-  assert.doesNotMatch((await broken.json()).error, /internal details/);
+  const body = await broken.json();
+  assert.match(body.error, /went wrong/);
+  assert.equal(body.detail, "Gemini 400: API key not valid.");
+  assert.equal(calls.length, 1, "client errors are not retried");
+});
+
+test("retries when Gemini is busy", async () => {
+  let n = 0;
+  const calls = mockGemini(() => (++n < 3 ? new Response("{}", { status: 503 }) : okReply()));
+  const res = await worker.fetch(chat(question), env);
+  assert.equal(res.status, 200);
+  assert.equal(calls.length, 3);
 });
 
 test("validContents accepts a normal tool round trip", () => {

@@ -142,7 +142,10 @@ async function nextTurn(contents) {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents }),
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.error || `The AI service returned ${res.status}.`);
+  if (!res.ok) {
+    if (body.detail) console.warn(`AI service: ${body.detail}`);
+    throw new Error(body.error || `The AI service returned ${res.status}.`);
+  }
   return body;
 }
 

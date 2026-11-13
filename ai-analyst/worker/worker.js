@@ -157,33 +157,47 @@ export default {
     if (!validContents(body?.contents)) return json({ error: "Bad request." }, 400, cors);
 
     const model = env.GEMINI_MODEL || "gemini-flash-latest";
+    const request_body = JSON.stringify({
+      systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents: body.contents,
+      tools: [{ functionDeclarations: TOOLS }],
+      toolConfig: { functionCallingConfig: { mode: "AUTO" } },
+      generationConfig: { maxOutputTokens: 8192 },
+    });
     const started = Date.now();
     let res;
-    try {
-      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: body.contents,
-          tools: [{ functionDeclarations: TOOLS }],
-          toolConfig: { functionCallingConfig: { mode: "AUTO" } },
-          generationConfig: { maxOutputTokens: 8192 },
-        }),
-        signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
-      });
-    } catch (err) {
-      console.log(JSON.stringify({ event: "error", kind: "network", detail: String(err).slice(0, 200) }));
-      return json({ error: "The AI model didn't respond. Please try again shortly." }, 502, cors);
+    // Gemini's free tier sometimes answers 500/503 when busy; two quick retries usually get through.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt) await new Promise((r) => setTimeout(r, 1500 * attempt));
+      try {
+        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+          body: request_body,
+          signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
+        });
+      } catch (err) {
+        console.log(JSON.stringify({ event: "error", kind: "network", attempt, detail: String(err).slice(0, 200) }));
+        res = null;
+        continue;
+      }
+      if (![500, 502, 503, 504].includes(res.status)) break;
+      console.log(JSON.stringify({ event: "error", kind: "gemini-retry", attempt, status: res.status }));
     }
     const ms = Date.now() - started;
 
+    if (!res) return json({ error: "The AI model didn't respond. Please try again shortly." }, 502, cors);
     if (res.status === 429) {
       return json({ error: "Today's free allowance for live questions is used up. The example questions still work, and live questions reset tomorrow." }, 429, cors);
     }
     if (!res.ok) {
-      console.log(JSON.stringify({ event: "error", kind: "gemini", status: res.status, detail: (await res.text()).slice(0, 300) }));
-      return json({ error: "Something went wrong talking to the AI model. Please try again shortly." }, 502, cors);
+      const raw = await res.text();
+      let reason = "";
+      try { reason = JSON.parse(raw).error?.message || ""; } catch { /* not JSON */ }
+      console.log(JSON.stringify({ event: "error", kind: "gemini", status: res.status, detail: raw.slice(0, 500) }));
+      // Google's own error message (for example a bad key or model name) helps whoever runs the site; it holds no secrets.
+      return json({ error: "Something went wrong talking to the AI model. Please try again shortly.",
+                    detail: `Gemini ${res.status}${reason ? `: ${reason.slice(0, 200)}` : ""}` }, 502, cors);
     }
 
     const data = await res.json();

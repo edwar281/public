@@ -10,6 +10,7 @@ const site = await serveSite(8000);
 const browser = await chromium.launch();
 const page = await browser.newPage();
 page.on("pageerror", (e) => console.log(`[page error] ${e.message}`));
+page.on("console", (m) => { if (m.type() === "warning" || m.type() === "error") console.log(`[page] ${m.text()}`); });
 let saved = 0;
 try {
   await page.goto("http://127.0.0.1:8000/");
