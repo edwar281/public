@@ -37,6 +37,30 @@
 </section>
 
 <section class="cases" aria-label="Projects" style="gap:32px">
+  <article class="case panel" id="ai-analyst">
+    <img class="case-img" src="assets/proj-analyst.jpg" width="1400" height="280" alt="">
+    <header>
+      <span class="meta">November 2026 &middot; Agentic AI, LLM tool use, WebAssembly</span>
+      <h2>Broadband Analyst</h2>
+    </header>
+    <p class="lede">An AI analyst for the broadband data. Visitors ask a question in plain English, and a Gemini agent plans the analysis, writes SQL and Python, runs it, reads the results and writes up the answer. The page shows each step with its code, output, charts, token count and timing.</p>
+    <dl class="kpis">
+      <div><dt>$0</dt><dd>monthly cost: GitHub Pages, a Cloudflare Worker and Gemini's free tier</dd></div>
+      <div><dt>2 tools</dt><dd>a DuckDB SQL runner and a Python sandbox with pandas, Plotly and statsmodels</dd></div>
+      <div><dt>8 steps</dt><dd>at most per question, and 30 seconds at most per step</dd></div>
+      <div><dt>6</dt><dd>example questions saved from live runs, so they replay instantly</dd></div>
+    </dl>
+    <dl class="pao">
+      <div><dt>Data</dt><dd>The county and quarter tables from the broadband project: 3,233 counties, 187,713 county-quarter rows of speed, latency and FCC 100/20 coverage, plus national and rural summaries and flagged outages.</dd></div>
+      <div><dt>Approach</dt><dd>A tool-calling loop in the browser. The model asks for a query or a script, the code runs in a WebAssembly sandbox in the visitor's tab, and the results go back to the model until it can answer. Errors go back too, so the agent fixes its own code.</dd></div>
+      <div><dt>Design</dt><dd>No server runs AI-written code, and the API key sits in a small Cloudflare Worker that adds the instructions, checks each request and limits calls per visitor. When the main model is busy, it falls back to a lighter one.</dd></div>
+    </dl>
+    <p class="actions">
+      <a class="btn" href="https://edwar281.github.io/public/ai-analyst/">Try the analyst</a>
+      <a class="btn ghost" href="https://github.com/edwar281/public/tree/main/ai-analyst" rel="noopener">Code on GitHub</a>
+    </p>
+  </article>
+
   <article class="case panel" id="kkbox-churn">
     <img class="case-img" src="assets/proj-kkbox.jpg" width="1400" height="280" alt="">
     <header>

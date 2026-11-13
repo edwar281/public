@@ -1,0 +1,125 @@
+# Broadband Analyst (ai-analyst/): tests on every change, and a button to save fresh example answers.
+name: ai-analyst
+
+on:
+  push:
+    paths: ["ai-analyst/**", ".github/workflows/ai-analyst.yml"]
+  pull_request:
+    paths: ["ai-analyst/**", ".github/workflows/ai-analyst.yml"]
+  workflow_dispatch:
+    inputs:
+      record:
+        description: "Run the example questions live and save them (needs the Worker URL in config.js)"
+        type: boolean
+        default: true
+
+jobs:
+  test:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ai-analyst
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Worker unit tests
+        run: node --test tests/worker.test.mjs
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.65.0 && npx playwright install --with-deps chromium
+      - name: Browser test (Pyodide, DuckDB and the agent loop)
+        run: node tests/e2e.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-failure
+          path: ai-analyst/e2e-failure.png
+          if-no-files-found: ignore
+
+  deploy-worker:
+    # Deploys the Cloudflare Worker after the tests pass, once the Cloudflare secrets exist.
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ai-analyst')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy with Wrangler
+        working-directory: ai-analyst/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "No Cloudflare secrets yet; skipping the Worker deploy."; exit 0
+          fi
+          # Shows which accounts the token can reach; the configured account appears masked as ***.
+          npx --yes wrangler@4.149.0 whoami || true
+          npx --yes wrangler@4.149.0 deploy
+
+  preview:
+    # Publishes the ai-analyst branch to https://broadband-analyst-preview.pages.dev so it can be tried before merging.
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/ai-analyst'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy the preview to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "No Cloudflare secrets yet; skipping the preview."; exit 0
+          fi
+          mkdir -p site
+          cp -r ai-analyst/index.html ai-analyst/app.js ai-analyst/config.js ai-analyst/sandbox.js ai-analyst/runtime.py \
+            ai-analyst/style.css ai-analyst/saved-runs.json ai-analyst/data site/
+          npx --yes wrangler@4.149.0 pages project create broadband-analyst-preview --production-branch ai-analyst || true
+          npx --yes wrangler@4.149.0 pages deploy site --project-name broadband-analyst-preview --branch ai-analyst --commit-dirty=true
+
+  record:
+    if: github.event_name == 'workflow_dispatch' && inputs.record
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ai-analyst
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.65.0 && npx playwright install --with-deps chromium
+      - name: Run the example questions live
+        run: node tests/record.mjs
+      - name: Commit the saved runs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add saved-runs.json
+          git diff --cached --quiet && { echo "Nothing new to save."; exit 0; }
+          git commit -m "Save example answers for Broadband Analyst"
+          git push
+      - name: Refresh the preview with the new answers
+        # Pushes made by this workflow don't start other runs, so the preview is refreshed here.
+        if: github.ref == 'refs/heads/ai-analyst'
+        working-directory: .
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || exit 0
+          mkdir -p site
+          cp -r ai-analyst/index.html ai-analyst/app.js ai-analyst/config.js ai-analyst/sandbox.js ai-analyst/runtime.py \
+            ai-analyst/style.css ai-analyst/saved-runs.json ai-analyst/data site/
+          npx --yes wrangler@4.149.0 pages deploy site --project-name broadband-analyst-preview --branch ai-analyst --commit-dirty=true
