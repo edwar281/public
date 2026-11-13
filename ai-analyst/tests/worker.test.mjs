@@ -55,7 +55,8 @@ test("forwards the conversation with the system prompt, tools and key", async ()
   assert.equal(out.content.parts[0].thoughtSignature, "sig", "thought signatures must survive the round trip");
   assert.equal(out.input_tokens, 100);
   assert.equal(out.output_tokens, 25);
-  assert.equal(out.model, "gemini-test");
+  assert.equal(out.model, "gemini-flash-latest");
+  assert.equal(out.model_version, "gemini-test");
   assert.equal(res.headers.get("Access-Control-Allow-Origin"), ORIGIN);
 });
 
@@ -114,7 +115,7 @@ test("explains Gemini's quota errors and hides other upstream errors", async () 
   mockGemini(() => new Response("{}", { status: 429 }));
   const quota = await worker.fetch(chat(question), env);
   assert.equal(quota.status, 429);
-  assert.match((await quota.json()).error, /free allowance/);
+  assert.match((await quota.json()).error, /quota is busy/);
   const calls = mockGemini(() => new Response(JSON.stringify({ error: { message: "API key not valid." } }), { status: 400 }));
   const broken = await worker.fetch(chat(question), env);
   assert.equal(broken.status, 502);
@@ -130,6 +131,25 @@ test("retries when Gemini is busy", async () => {
   const res = await worker.fetch(chat(question), env);
   assert.equal(res.status, 200);
   assert.equal(calls.length, 3);
+  assert.match(calls[2].url, /gemini-flash-lite-latest/, "falls back to Flash-Lite after two busy answers");
+  assert.equal((await res.json()).model, "gemini-flash-lite-latest");
+});
+
+test("a rate-limited model hands over to the next one without retrying", async () => {
+  let n = 0;
+  const calls = mockGemini(() => (++n === 1 ? new Response("{}", { status: 429 }) : okReply()));
+  const res = await worker.fetch(chat(question), env);
+  assert.equal(res.status, 200);
+  assert.equal(calls.length, 2);
+  assert.match(calls[1].url, /gemini-flash-lite-latest/);
+});
+
+test("keeps a conversation on the model that started it", async () => {
+  const calls = mockGemini(okReply);
+  await worker.fetch(chat({ ...question, model: "gemini-flash-lite-latest" }), env);
+  assert.match(calls[0].url, /gemini-flash-lite-latest/);
+  await worker.fetch(chat({ ...question, model: "some-expensive-model" }), env);
+  assert.match(calls[1].url, /models\/gemini-flash-latest:/, "unknown models are ignored");
 });
 
 test("validContents accepts a normal tool round trip", () => {

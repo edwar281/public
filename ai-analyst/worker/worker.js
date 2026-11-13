@@ -6,7 +6,8 @@
 //
 // Settings (Cloudflare dashboard > the Worker > Settings > Variables and Secrets):
 //   GEMINI_API_KEY   secret, required
-//   GEMINI_MODEL     optional, defaults to gemini-flash-latest
+//   GEMINI_MODELS    optional, comma-separated models to try in order;
+//                    defaults to gemini-flash-latest,gemini-flash-lite-latest
 //   ALLOWED_ORIGINS  optional, comma-separated; defaults to the portfolio site and localhost
 
 const DEFAULT_ORIGINS = ["https://edwar281.github.io", "http://localhost:8000", "http://127.0.0.1:8000"];
@@ -156,7 +157,14 @@ export default {
     try { body = JSON.parse(text); } catch { return json({ error: "Bad request." }, 400, cors); }
     if (!validContents(body?.contents)) return json({ error: "Bad request." }, 400, cors);
 
-    const model = env.GEMINI_MODEL || "gemini-flash-latest";
+    // Models to try in order. Flash-Lite has its own free quota and is busy less often, so it backs up Flash.
+    const models = (env.GEMINI_MODELS || env.GEMINI_MODEL || "gemini-flash-latest,gemini-flash-lite-latest")
+      .split(",").map((m) => m.trim()).filter(Boolean);
+    // Keep a conversation on the model that started it when possible.
+    if (typeof body.model === "string" && models.includes(body.model)) {
+      models.splice(models.indexOf(body.model), 1);
+      models.unshift(body.model);
+    }
     const request_body = JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: body.contents,
@@ -165,39 +173,50 @@ export default {
       generationConfig: { maxOutputTokens: 8192 },
     });
     const started = Date.now();
-    let res;
-    // Gemini's free tier sometimes answers 500/503 when busy; two quick retries usually get through.
-    for (let attempt = 0; attempt < 3; attempt++) {
-      if (attempt) await new Promise((r) => setTimeout(r, 1500 * attempt));
-      try {
-        res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
-          body: request_body,
-          signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
-        });
-      } catch (err) {
-        console.log(JSON.stringify({ event: "error", kind: "network", attempt, detail: String(err).slice(0, 200) }));
-        res = null;
-        continue;
+    let res = null;
+    let model = models[0];
+    let lastFailure = { text: "" };
+    // A busy model (500/503) gets one quick retry; a busy or rate-limited one (429) hands over to the next model.
+    tryModels: for (const m of models) {
+      model = m;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        if (attempt) await new Promise((r) => setTimeout(r, 2000));
+        try {
+          res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": env.GEMINI_API_KEY },
+            body: request_body,
+            signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
+          });
+        } catch (err) {
+          console.log(JSON.stringify({ event: "error", kind: "network", model: m, attempt, detail: String(err).slice(0, 200) }));
+          res = null;
+          continue;
+        }
+        if (res.ok || ![429, 500, 502, 503, 504].includes(res.status)) break tryModels;
+        lastFailure = { status: res.status, text: await res.text() };
+        console.log(JSON.stringify({ event: "error", kind: "gemini-busy", model: m, attempt, status: res.status }));
+        if (res.status === 429) break; // retrying the same model right away won't help
       }
-      if (![500, 502, 503, 504].includes(res.status)) break;
-      console.log(JSON.stringify({ event: "error", kind: "gemini-retry", attempt, status: res.status }));
     }
     const ms = Date.now() - started;
 
+    const reasonOf = (raw) => { try { return JSON.parse(raw).error?.message || ""; } catch { return ""; } };
     if (!res) return json({ error: "The AI model didn't respond. Please try again shortly." }, 502, cors);
-    if (res.status === 429) {
-      return json({ error: "Today's free allowance for live questions is used up. The example questions still work, and live questions reset tomorrow." }, 429, cors);
-    }
     if (!res.ok) {
-      const raw = await res.text();
-      let reason = "";
-      try { reason = JSON.parse(raw).error?.message || ""; } catch { /* not JSON */ }
-      console.log(JSON.stringify({ event: "error", kind: "gemini", status: res.status, detail: raw.slice(0, 500) }));
+      const raw = res.bodyUsed ? lastFailure.text : await res.text();
+      const status = res.status;
+      const reason = reasonOf(raw);
+      console.log(JSON.stringify({ event: "error", kind: "gemini", status, model, detail: raw.slice(0, 500) }));
+      const detail = `Gemini ${status}${reason ? `: ${reason.slice(0, 200)}` : ""}`;
+      if (status === 429) {
+        return json({ error: "The free AI quota is busy right now. Wait a minute and try again, or try one of the saved examples.", detail }, 429, cors);
+      }
+      if ([500, 502, 503, 504].includes(status)) {
+        return json({ error: "The AI model is very busy right now. Please try again in a minute.", detail }, 503, cors);
+      }
       // Google's own error message (for example a bad key or model name) helps whoever runs the site; it holds no secrets.
-      return json({ error: "Something went wrong talking to the AI model. Please try again shortly.",
-                    detail: `Gemini ${res.status}${reason ? `: ${reason.slice(0, 200)}` : ""}` }, 502, cors);
+      return json({ error: "Something went wrong talking to the AI model. Please try again shortly.", detail }, 502, cors);
     }
 
     const data = await res.json();
@@ -206,7 +225,8 @@ export default {
     const out = {
       content: candidate.content || { role: "model", parts: [{ text: "" }] },
       finish: candidate.finishReason || "",
-      model: data.modelVersion || model,
+      model,
+      model_version: data.modelVersion || model,
       ms,
       input_tokens: usage.promptTokenCount || 0,
       output_tokens: (usage.candidatesTokenCount || 0) + (usage.thoughtsTokenCount || 0),

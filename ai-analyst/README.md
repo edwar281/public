@@ -40,7 +40,7 @@ To rebuild: run `make panel` in `ookla-broadband/`, then `python data/build_data
 
 ## Setting it up
 
-1. **Worker.** In the Cloudflare dashboard, create a Worker, replace its code with `worker/worker.js` and deploy. Under Settings > Variables and Secrets, add `GEMINI_API_KEY` as a secret (a key from [Google AI Studio](https://aistudio.google.com/apikey) in a project without billing stays on the free tier). Optional: `GEMINI_MODEL`, and `ALLOWED_ORIGINS` if the page moves to another domain.
+1. **Worker.** In the Cloudflare dashboard, create a Worker, replace its code with `worker/worker.js` and deploy. Under Settings > Variables and Secrets, add `GEMINI_API_KEY` as a secret (a key from [Google AI Studio](https://aistudio.google.com/apikey) in a project without billing stays on the free tier). Optional: `GEMINI_MODELS` (models to try in order, default `gemini-flash-latest,gemini-flash-lite-latest`), and `ALLOWED_ORIGINS` if the page moves to another domain.
 2. **Page.** Put the Worker's URL in `config.js`. GitHub Pages serves the folder as it is.
 3. **Example answers.** In GitHub, Actions > ai-analyst > Run workflow runs the six example questions live and commits `saved-runs.json`.
 
@@ -57,7 +57,7 @@ The browser test uses a scripted stand-in for Gemini, so it needs no API key. Gi
 
 ## Costs and limits
 
-GitHub Pages, Cloudflare Workers and Gemini's free tier cost nothing. The Worker limits each visitor to 12 model calls a minute, and Gemini's free-tier quota caps the daily total; when it runs out, visitors are told to try the saved examples. On the free tier Google may use prompts to improve its products, which is acceptable here because everything sent is public data.
+GitHub Pages, Cloudflare Workers and Gemini's free tier cost nothing. The Worker limits each visitor to 12 model calls a minute, and Gemini's free-tier quota caps the daily total. When Flash is busy or rate-limited, the Worker falls back to Flash-Lite, which has its own quota; when both are out, visitors are told to try the saved examples. On the free tier Google may use prompts to improve its products, which is acceptable here because everything sent is public data.
 
 ## Data license
 

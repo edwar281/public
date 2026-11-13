@@ -137,9 +137,9 @@ function summarizeResult(r) {
   return (parts.join("\n\n") || "The code ran and produced no output.").slice(0, RESULT_CHARS);
 }
 
-async function nextTurn(contents) {
+async function nextTurn(contents, model) {
   const res = await fetch(`${CONFIG.workerUrl.replace(/\/$/, "")}/chat`, {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents }),
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents, model }),
   });
   const body = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -161,13 +161,14 @@ async function* liveRun(question) {
   for (;;) {
     if (steps >= MAX_STEPS) contents.push({ role: "user", parts: [{ text: "You're out of steps. Answer now with what you have." }] });
     yield { type: "thinking" };
-    const turn = await nextTurn(contents);
+    const turn = await nextTurn(contents, trace.model || undefined);
     contents.push(turn.content);
     trace.llm_calls += 1;
     trace.input_tokens += turn.input_tokens;
     trace.output_tokens += turn.output_tokens;
     trace.llm_ms += turn.ms;
     trace.model = turn.model;
+    trace.model_version = turn.model_version || turn.model;
     const parts = turn.content.parts || [];
     const calls = parts.filter((p) => p.functionCall).map((p) => p.functionCall);
     text = parts.filter((p) => p.text && !p.thought).map((p) => p.text).join("").trim();
@@ -292,7 +293,7 @@ function renderTrace(trace, saved, presetId) {
     `${trace.input_tokens.toLocaleString()} tokens in, ${trace.output_tokens.toLocaleString()} out`,
     `model ${(trace.llm_ms / 1000).toFixed(1)}s`,
     `code ${(trace.run_ms / 1000).toFixed(1)}s`,
-    trace.model,
+    trace.model_version || trace.model,
   ];
   if (saved) parts.unshift(`Saved run from ${saved}`);
   parts.filter(Boolean).forEach((p) => bar.append(el("span", "", p)));

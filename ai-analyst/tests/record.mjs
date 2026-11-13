@@ -18,19 +18,22 @@ try {
   const ids = process.argv.slice(2).length ? process.argv.slice(2) : await page.evaluate(() => window.analyst.presets.map((p) => p.id));
   const runs = JSON.parse(await readFile(OUT, "utf8"));
   for (const id of ids) {
-    console.log(`Running ${id}...`);
-    await page.evaluate((presetId) => window.analyst.ask({ presetId, live: true }), id);
-    const run = await page.evaluate((presetId) => window.analyst.recorded[presetId], id);
-    const problem = await page.locator(".problem").allInnerTexts();
-    if (!run || problem.length) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      console.log(`Running ${id}${attempt > 1 ? " (second try)" : ""}...`);
+      await page.evaluate((presetId) => window.analyst.ask({ presetId, live: true }), id);
+      const run = await page.evaluate((presetId) => window.analyst.recorded[presetId], id);
+      const problem = await page.locator(".problem").allInnerTexts();
+      if (run && !problem.length) {
+        const failedSteps = run.transcript.filter((s) => !s.result.ok).length;
+        console.log(`  ${run.trace.steps} steps (${failedSteps} with errors), ${run.trace.seconds}s on ${run.trace.model_version}: ${run.answer.slice(0, 120)}`);
+        runs[id] = run;
+        saved += 1;
+        break;
+      }
       console.log(`  failed: ${problem.join(" ") || "no answer"}`);
-      continue;
+      if (attempt === 1) await page.waitForTimeout(60_000);
     }
-    const failedSteps = run.transcript.filter((s) => !s.result.ok).length;
-    console.log(`  ${run.trace.steps} steps (${failedSteps} with errors), ${run.trace.seconds}s: ${run.answer.slice(0, 120)}`);
-    runs[id] = run;
-    saved += 1;
-    await page.waitForTimeout(15_000); // stay well inside the free tier's per-minute limit
+    await page.waitForTimeout(30_000); // stay well inside the free tier's per-minute limits
   }
   await writeFile(OUT, `${JSON.stringify(runs, null, 1)}\n`);
   console.log(`Saved ${saved} of ${ids.length} runs to saved-runs.json`);
