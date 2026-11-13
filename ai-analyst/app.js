@@ -106,7 +106,7 @@ const sandbox = {
     const timeout = new Promise((resolve) => {
       timer = setTimeout(() => {
         this.reset(new Error("timeout"));
-        resolve(fail(`Stopped after ${Math.round(limit / 1000)} seconds. Try a smaller query.`));
+        resolve(fail(`Stopped after ${Math.round(limit / 1000)} seconds. Try a smaller query. Python variables from earlier steps were cleared.`));
       }, limit);
     });
     try {
@@ -156,7 +156,8 @@ async function* liveRun(question) {
   const transcript = [];
   let steps = 0;
   let text = "";
-  sandbox.start().catch(() => {}); // warm up Python while the model plans
+  // Warm up Python while the model plans, and start this question with no leftover variables.
+  sandbox.start().then(() => sandbox.call({ type: "new_session" })).catch(() => {});
   yield { type: "start", question };
   for (;;) {
     if (steps >= MAX_STEPS) contents.push({ role: "user", parts: [{ text: "You're out of steps. Answer now with what you have." }] });

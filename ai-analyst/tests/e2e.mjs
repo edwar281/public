@@ -9,11 +9,12 @@ import { serveSite } from "./serve.mjs";
 const call = (name, args) => ({ role: "model", parts: [{ functionCall: { name, args }, thoughtSignature: "sig" }] });
 const SCRIPT = [
   call("run_sql", { purpose: "Count rows by area group", query: "SELECT area_group, count(*) AS n FROM area_quarterly GROUP BY 1 ORDER BY 1" }),
+  call("run_python", { purpose: "Load national speeds", code:
+    "df = sql(\"SELECT quarter, median_download_mbps FROM area_quarterly WHERE area_group='National' AND network='fixed' ORDER BY quarter\")\nprint(len(df), 'quarters')" }),
   call("run_python", { purpose: "Chart national speeds and fit a trend", code: [
-    "from scipy import stats",
-    "df = sql(\"SELECT quarter, median_download_mbps FROM area_quarterly WHERE area_group='National' AND network='fixed' ORDER BY quarter\")",
-    "fit = stats.linregress(range(len(df)), df.median_download_mbps)",
-    "print(f'slope={fit.slope:.2f}')",
+    "slope = np.polyfit(range(len(df)), df.median_download_mbps, 1)[0]",
+    "rho = df.median_download_mbps.corr(pd.Series(range(len(df))), method='spearman')  # pandas imports scipy itself",
+    "print(f'slope={slope:.2f} rho={rho:.2f}')",
     "show(df.tail(3), 'Latest quarters')",
     "import matplotlib.pyplot as plt",
     "plt.plot(df.quarter, df.median_download_mbps); plt.title('National home download speed')",
@@ -62,24 +63,25 @@ try {
   console.log(`Live run finished in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
 
   const steps = page.locator(".step");
-  assert.equal(await steps.count(), 5);
+  assert.equal(await steps.count(), 6);
   assert.match(await steps.nth(0).locator(".output").innerText(), /Large metro/);
-  const py = steps.nth(1).locator(".output");
-  assert.match(await py.innerText(), /slope=/);
+  assert.match(await steps.nth(1).locator(".output").innerText(), /quarters/);
+  const py = steps.nth(2).locator(".output");
+  assert.match(await py.innerText(), /slope=[\d.]+ rho=[\d.]+/);
   assert.match(await py.innerText(), /Latest quarters/);
   assert.equal(await py.locator("img.chart").count(), 1);
-  assert.match(await steps.nth(2).locator(".output").innerText(), /Stopped after 15 seconds/);
-  assert.match(await steps.nth(3).locator(".output").innerText(), /3,23\d/);
-  assert.match(await steps.nth(4).locator(".error").innerText(), /disabled by configuration|Permission|not exist|No files/i);
+  assert.match(await steps.nth(3).locator(".output").innerText(), /Stopped after 15 seconds/);
+  assert.match(await steps.nth(4).locator(".output").innerText(), /3,23\d/);
+  assert.match(await steps.nth(5).locator(".error").innerText(), /disabled by configuration|Permission|not exist|No files/i);
   assert.match(await page.locator(".answer .body").innerHTML(), /<li><strong>Rural<\/strong> lagged<\/li>/);
-  assert.match(await page.locator(".trace").innerText(), /5 steps/);
+  assert.match(await page.locator(".trace").innerText(), /6 steps/);
 
   // What the model was sent back after each step.
   const lastToolReply = (n) => requests[n].at(-1).parts[0].functionResponse.response.result;
-  assert.equal(requests.length, 6);
+  assert.equal(requests.length, 7);
   assert.match(lastToolReply(1), /Large metro,60/);
-  assert.match(lastToolReply(2), /slope=.*1 chart\(s\) shown/s);
-  assert.match(lastToolReply(3), /ERROR:\nStopped after 15 seconds/);
+  assert.match(lastToolReply(3), /slope=.*1 chart\(s\) shown/s);
+  assert.match(lastToolReply(4), /ERROR:\nStopped after 15 seconds/);
   assert.equal(requests[1][1].parts[0].thoughtSignature, "sig", "the model's own turn goes back unchanged");
 
   // A saved example replays without calling the model.

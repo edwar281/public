@@ -11,6 +11,7 @@ const pyodideModule = import(`${PYODIDE_URL}pyodide.mjs`);
 
 let ready = null;
 let runFn = null;
+let newSessionFn = null;
 
 async function init() {
   const { loadPyodide } = await pyodideModule;
@@ -28,7 +29,18 @@ async function init() {
   py.runPython(runtime);
   py.runPython("connect('/data')");
   runFn = py.globals.get("run");
+  newSessionFn = py.globals.get("new_session");
   return py;
+}
+
+async function loadMissing(py, name) {
+  try {
+    await py.loadPackage(name, { messageCallback: () => {}, errorCallback: () => {} });
+    py.pyimport(name);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 self.onmessage = async (ev) => {
@@ -36,7 +48,8 @@ self.onmessage = async (ev) => {
   try {
     if (!ready) ready = init();
     const py = await ready;
-    if (type === "init") {
+    if (type === "init" || type === "new_session") {
+      if (type === "new_session") newSessionFn();
       self.postMessage({ id, ok: true });
       return;
     }
@@ -44,7 +57,12 @@ self.onmessage = async (ev) => {
       // Loads scipy, statsmodels and the like only when the code imports them.
       await py.loadPackagesFromImports(code, { messageCallback: () => {} });
     }
-    self.postMessage({ id, result: JSON.parse(runFn(lang, code)) });
+    let result = JSON.parse(runFn(lang, code));
+    // Libraries such as pandas import scipy on their own (for example corr(method="spearman")),
+    // which loadPackagesFromImports can't see. Load the missing package and try once more.
+    const missing = !result.ok && /No module named '([\w.]+)'/.exec(result.error || "");
+    if (missing && await loadMissing(py, missing[1].split(".")[0])) result = JSON.parse(runFn(lang, code));
+    self.postMessage({ id, result });
   } catch (err) {
     self.postMessage({ id, error: String(err && err.message ? err.message : err) });
   }

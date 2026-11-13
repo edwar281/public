@@ -61,7 +61,7 @@ disruptions: 17 county-quarters an anomaly detector flagged, where test volume s
 - run_python: pandas, numpy, matplotlib, scipy and statsmodels are available. sql(query) returns a
   DataFrame, show(df, title) shows a table, matplotlib figures appear as charts. You can't see charts,
   so print the key numbers. The code runs in the visitor's browser and has no internet access to rely on.
-  Each run starts fresh: variables don't carry over between steps. Label chart axes with units and give every chart a title.
+  Variables carry over between run_python steps within a question, so reuse DataFrames you already made. Label chart axes with units and give every chart a title.
 
 ## How to work
 - Use at most 5 steps. Answer simple lookups with one query.
@@ -89,7 +89,7 @@ export const TOOLS = [
     name: "run_python",
     description: "Run Python (pandas, numpy, matplotlib, scipy, statsmodels). sql(query) returns a DataFrame, " +
       "show(df, title) displays a table, and any matplotlib figure is shown as a chart. Printed output comes " +
-      "back to you. Each run starts fresh. Use it for charts, statistics and anything SQL can't do easily.",
+      "back to you. Variables carry over from earlier run_python steps. Use it for charts, statistics and anything SQL can't do easily.",
     parameters: {
       type: "object",
       properties: {

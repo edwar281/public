@@ -59,8 +59,17 @@ def _table(df, title=None):
             "row_count": int(len(df)), "truncated": len(df) > MAX_ROWS}
 
 
+_session = {}
+
+
+def new_session():
+    """Forget the variables from the previous question."""
+    _session.clear()
+
+
 def run(lang, code):
-    """Run one SQL query or Python snippet. Returns a JSON string."""
+    """Run one SQL query or Python snippet. Returns a JSON string.
+    Python variables carry over between steps until new_session() is called."""
     tables = []
     result = {"ok": True, "stdout": "", "tables": [], "images": [], "error": None}
 
@@ -73,7 +82,8 @@ def run(lang, code):
             tables.append(_table(sql(code)))
         else:
             buf = io.StringIO()
-            ns = {"sql": sql, "show": show, "pd": pd, "np": np, "plt": plt}
+            ns = _session
+            ns.update(sql=sql, show=show, pd=pd, np=np, plt=plt)
             with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
                 exec(compile(code, "<analysis>", "exec"), ns)
             out = buf.getvalue()
