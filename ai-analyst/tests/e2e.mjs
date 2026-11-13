@@ -80,7 +80,7 @@ try {
   assert.match(await steps.nth(4).locator(".output").innerText(), /3,23\d/);
   assert.match(await steps.nth(5).locator(".error").innerText(), /disabled by configuration|Permission|not exist|No files/i);
   assert.match(await page.locator(".answer .body").innerHTML(), /<li><strong>Rural<\/strong> lagged<\/li>/);
-  assert.match(await page.locator(".trace").innerText(), /6 steps/);
+  assert.match(await page.locator(".run-trace").innerText(), /6 steps/);
 
   // What the model was sent back after each step.
   const lastToolReply = (n) => requests[n].at(-1).parts[0].functionResponse.response.result;
@@ -104,7 +104,7 @@ try {
   const before = requests.length;
   await replayPage.click(".chip[data-id='helene']");
   await replayPage.waitForSelector(".answer");
-  assert.match(await replayPage.locator(".trace").innerText(), /Saved run from 2026-11-13/);
+  assert.match(await replayPage.locator(".run-trace").innerText(), /Saved run from 2026-11-13/);
   assert.equal(await replayPage.locator(".live-btn").count(), 1);
   assert.equal(requests.length, before);
   console.log("e2e: all checks passed");

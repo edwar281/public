@@ -78,8 +78,8 @@ td.num { text-align: right; }
 .answer h2 { font: 500 0.75rem/1 var(--f-mono); text-transform: uppercase; letter-spacing: 0.14em; color: var(--accent); margin: 0; }
 .answer .body { display: grid; gap: 10px; font-size: 1.02rem; }
 .answer ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
-.trace { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 400 0.78rem/1.4 var(--f-mono); color: var(--ink-soft); }
-.trace .live-btn { margin-left: auto; }
+.run-trace { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 400 0.78rem/1.4 var(--f-mono); color: var(--ink-soft); }
+.run-trace .live-btn { margin-left: auto; }
 .problem { background: var(--error-soft); color: var(--error); border-radius: 8px; padding: 14px 16px; }
 
 .how { margin-top: 72px; }
@@ -96,5 +96,5 @@ td.num { text-align: right; }
   .ask-form { flex-direction: column; }
   .btn { padding: 12px 18px; }
   .step, .answer { padding: 14px; }
-  .trace .live-btn { margin-left: 0; }
+  .run-trace .live-btn { margin-left: 0; }
 }

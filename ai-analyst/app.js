@@ -316,7 +316,7 @@ function renderResult(out, r) {
 }
 
 function renderTrace(trace, saved, presetId) {
-  const bar = el("div", "trace");
+  const bar = el("div", "run-trace");
   const parts = [
     `${trace.steps} step${trace.steps === 1 ? "" : "s"}`,
     `${trace.llm_calls} model call${trace.llm_calls === 1 ? "" : "s"}`,
