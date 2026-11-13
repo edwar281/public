@@ -6,12 +6,14 @@ const PYODIDE_URL = "https://cdn.jsdelivr.net/pyodide/v314.0.7/full/";
 const TABLES = ["counties", "county_quarterly", "area_quarterly", "disruptions"];
 const BASE_PACKAGES = ["duckdb", "numpy", "pandas", "matplotlib"];
 
-importScripts(`${PYODIDE_URL}pyodide.js`);
+// A module worker, so Pyodide loads with import() rather than importScripts().
+const pyodideModule = import(`${PYODIDE_URL}pyodide.mjs`);
 
 let ready = null;
 let runFn = null;
 
 async function init() {
+  const { loadPyodide } = await pyodideModule;
   const py = await loadPyodide({ indexURL: PYODIDE_URL });
   const [, runtime, ...files] = await Promise.all([
     py.loadPackage(BASE_PACKAGES, { messageCallback: () => {} }),

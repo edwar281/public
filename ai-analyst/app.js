@@ -62,7 +62,7 @@ const sandbox = {
 
   start() {
     if (this.ready) return this.ready;
-    this.worker = new Worker("sandbox.js");
+    this.worker = new Worker("sandbox.js", { type: "module" });
     this.worker.onmessage = (ev) => {
       const p = this.pending.get(ev.data.id);
       if (!p) return;

@@ -63,6 +63,8 @@ try {
   console.log("CDN from worker:", await page.evaluate(() => new Promise((resolve) => {
     const src = "try{importScripts('https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js');postMessage('ok '+typeof loadPyodide)}catch(e){postMessage('ERR '+e)}";
     const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    const m = new Worker(URL.createObjectURL(new Blob(["import('https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs').then(x=>postMessage('module ok '+typeof x.loadPyodide),e=>postMessage('module ERR '+e))"], { type: "text/javascript" })), { type: "module" });
+    m.onmessage = (ev) => console.log(ev.data);
     w.onmessage = (ev) => resolve(ev.data);
     w.onerror = (ev) => resolve(`onerror ${ev.message}`);
   })));
