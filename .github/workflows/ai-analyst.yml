@@ -25,10 +25,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Probe Pyodide CDN
-        run: |
-          for u in https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide-lock.json https://cdn.jsdelivr.net/pyodide/v0.29.5/full/pyodide.js https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js https://cdn.jsdelivr.net/npm/pyodide@314.0.7/pyodide.js https://cdn.jsdelivr.net/npm/pyodide@314.0.7/pyodide-lock.json; do echo "$(curl -s -o /dev/null -w '%{http_code}' $u) $u"; done
-          curl -s https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js | head -c 300; echo
       - name: Worker unit tests
         run: node --test tests/worker.test.mjs
       - name: Install Playwright

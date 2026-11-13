@@ -46,8 +46,6 @@ const page = await browser.newPage();
 page.on("console", (m) => console.log(`[page] ${m.text()}`));
 page.on("pageerror", (e) => console.log(`[page error] ${e.message}`));
 page.on("requestfailed", (r) => console.log(`[request failed] ${r.url()} ${r.failure()?.errorText}`));
-page.on("response", (r) => { if (r.status() >= 300) console.log(`[response] ${r.status()} ${r.url()}`); });
-page.on("worker", (w) => console.log(`[worker] ${w.url()}`));
 await page.addInitScript(() => {
   window.ANALYST_CONFIG = { workerUrl: "http://127.0.0.1:8787", stepTimeoutMs: 15000 };
 });
@@ -56,18 +54,6 @@ try {
   await page.goto("http://127.0.0.1:8000/");
   await page.evaluate(() => window.analyst.ready);
   assert.equal(await page.locator(".chip").count(), 6);
-  console.log("CDN from page:", await page.evaluate(async () => {
-    try { const r = await fetch("https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"); return `${r.status} ${r.headers.get("content-type")}`; }
-    catch (e) { return `ERR ${e}`; }
-  }));
-  console.log("CDN from worker:", await page.evaluate(() => new Promise((resolve) => {
-    const src = "try{importScripts('https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js');postMessage('ok '+typeof loadPyodide)}catch(e){postMessage('ERR '+e)}";
-    const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
-    const m = new Worker(URL.createObjectURL(new Blob(["import('https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs').then(x=>postMessage('module ok '+typeof x.loadPyodide),e=>postMessage('module ERR '+e))"], { type: "text/javascript" })), { type: "module" });
-    m.onmessage = (ev) => console.log(ev.data);
-    w.onmessage = (ev) => resolve(ev.data);
-    w.onerror = (ev) => resolve(`onerror ${ev.message}`);
-  })));
 
   const t0 = Date.now();
   await page.fill("#question", "How have speeds changed?");
