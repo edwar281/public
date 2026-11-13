@@ -396,7 +396,7 @@
     "id": 0,
     "lang": "python",
     "purpose": "Calculate growth multiples and plot fixed broadband speeds for rural vs large metros",
-    "code": "df = sql(\"\"\"\nSELECT area_group, network, quarter, median_download_mbps, median_upload_mbps, median_latency_ms\nFROM area_quarterly\nWHERE network = 'fixed' AND area_group IN ('Large metro', 'Rural')\nORDER BY quarter, area_group;\n\"\"\")\n\n# Let's see the start and end values\nprint(\"Start (2019Q1):\")\nprint(df[df['quarter'] == '2019Q1'][['area_group', 'median_download_mbps']])\nprint(\"\\nEnd (latest available, e.g., 2026Q2 or latest Q2):\")\nlatest_q = df['quarter'].max()\nprint(f\"Latest quarter: {latest_q}\")\nprint(df[df['quarter'] == latest_q][['area_group', 'median_download_mbps']])\n\nimport plotly.express as px\nfig = px.line(\n    df, x='quarter', y='median_download_mbps', color='area_group',\n    markers=True,\n    title='Home Internet Median Download Speed: Rural vs. Large Metro (2019–2026)',\n    labels={'quarter': 'Quarter', 'median_download_mbps': 'Median Download Speed (Mbps)', 'area_group': 'Area Type'}\n)\nfig.update_layout(xaxis_tickangle=-45)\nfig.show()\n",
+    "code": "df = sql(\"\"\"\nSELECT area_group, network, quarter, median_download_mbps, median_upload_mbps, median_latency_ms\nFROM area_quarterly\nWHERE network = 'fixed' AND area_group IN ('Large metro', 'Rural')\nORDER BY quarter, area_group;\n\"\"\")\n\n# Let's see the start and end values\nprint(\"Start (2019Q1):\")\nprint(df[df['quarter'] == '2019Q1'][['area_group', 'median_download_mbps']])\nprint(\"\\nEnd (latest available, e.g., 2026Q2 or latest Q2):\")\nlatest_q = df['quarter'].max()\nprint(f\"Latest quarter: {latest_q}\")\nprint(df[df['quarter'] == latest_q][['area_group', 'median_download_mbps']])\n\nimport plotly.express as px\nfig = px.line(\n    df, x='quarter', y='median_download_mbps', color='area_group',\n    markers=True,\n    title='Home Internet Median Download Speed: Rural vs. Large Metro (2019\u20132026)',\n    labels={'quarter': 'Quarter', 'median_download_mbps': 'Median Download Speed (Mbps)', 'area_group': 'Area Type'}\n)\nfig.update_layout(xaxis_tickangle=-45)\nfig.show()\n",
     "result": {
      "ok": true,
      "stdout": "Start (2019Q1):\n    area_group  median_download_mbps\n0  Large metro                110.71\n1        Rural                 17.13\n\nEnd (latest available, e.g., 2026Q2 or latest Q2):\nLatest quarter: 2026Q2\n     area_group  median_download_mbps\n58  Large metro                395.74\n59        Rural                205.73\n",
@@ -424,7 +424,7 @@
     }
    }
   ],
-  "answer": "Home internet speeds in rural areas grew 12-fold from early 2019 to mid-2026, surging from a median download speed of 17.1 Mbps to 205.7 Mbps, while large metros grew 3.6-fold from 110.7 Mbps to 395.7 Mbps.\n\n- Rural speeds experienced their steepest acceleration between 2021 and 2022, jumping from under 40 Mbps to over 60–70 Mbps.\n- By mid-2026, the median rural download speed (205.7 Mbps) easily surpassed the federal 100/20 broadband benchmark.\n- Despite the faster relative growth in rural areas, the absolute gap in download speeds widened from roughly 94 Mbps in 2019 to 190 Mbps in 2026.\n\n*Note: Figures reflect test-weighted medians from Ookla Speedtest data, capturing the speeds experienced by users who ran tests rather than all connected households.*",
+  "answer": "Home internet speeds in rural areas grew 12-fold from early 2019 to mid-2026, surging from a median download speed of 17.1 Mbps to 205.7 Mbps, while large metros grew 3.6-fold from 110.7 Mbps to 395.7 Mbps.\n\n- Rural speeds experienced their steepest acceleration between 2021 and 2022, jumping from under 40 Mbps to over 60\u201370 Mbps.\n- By mid-2026, the median rural download speed (205.7 Mbps) easily surpassed the federal 100/20 broadband benchmark.\n- Despite the faster relative growth in rural areas, the absolute gap in download speeds widened from roughly 94 Mbps in 2019 to 190 Mbps in 2026.\n\n*Note: Figures reflect test-weighted medians from Ookla Speedtest data, capturing the speeds experienced by users who ran tests rather than all connected households.*",
   "trace": {
    "llm_calls": 4,
    "input_tokens": 8386,
@@ -2689,7 +2689,7 @@
     }
    }
   ],
-  "answer": "There is a weak positive relationship between county median household income and fixed broadband download speed ($r = 0.23$). \n\n* Wealthier counties tend to have moderately higher median download speeds, though the spread is wide across all income levels.\n* The positive trend is visible across all community types, from large metro areas to rural counties.\n* Income explains only a modest share of the variation in speeds, as infrastructure availability and local provider investments play a major role independently of local household income.\n\n*Note: Data reflects Q2 2026 Speedtest Ookla results joined with 2018–2022 ACS median household income by county.*",
+  "answer": "There is a weak positive relationship between county median household income and fixed broadband download speed (r = 0.23). \n\n* Wealthier counties tend to have moderately higher median download speeds, though the spread is wide across all income levels.\n* The positive trend is visible across all community types, from large metro areas to rural counties.\n* Income explains only a modest share of the variation in speeds, as infrastructure availability and local provider investments play a major role independently of local household income.\n\n*Note: Data reflects Q2 2026 Speedtest Ookla results joined with 2018\u20132022 ACS median household income by county.*",
   "trace": {
    "llm_calls": 3,
    "input_tokens": 6719,
@@ -3668,7 +3668,7 @@
     }
    }
   ],
-  "answer": "In 2024Q4, following Hurricane Helene in late September, test volume for fixed home broadband in Buncombe County, NC surged by over 130% to 31,807 tests (compared to roughly 13,700–15,300 in normal quarters), accompanied by a spike in latency and a dip in speeds as residents rushed to test connectivity.\n\n- **Test Volume Surge:** Fixed broadband tests jumped to 31,807 in 2024Q4 (z-score of 10.03 against historical trends), flagged as a major anomaly due to Hurricane Helene.\n- **Latency & Speed Impact:** Median download speed dropped slightly to 239.6 Mbps (down from ~254–264 Mbps earlier in the year), while median latency increased to 29 ms (up from 24 ms).\n- **Mobile Network:** Mobile tests also increased significantly during 2024Q4 (2,454 tests compared to ~1,300–1,600 typically), with mobile download speeds dropping sharply to 125.97 Mbps.\n\n*Note: Speedtest metrics reflect user testing behavior during outages and congestion rather than total continuous uptime.*",
+  "answer": "In 2024Q4, following Hurricane Helene in late September, test volume for fixed home broadband in Buncombe County, NC surged by over 130% to 31,807 tests (compared to roughly 13,700\u201315,300 in normal quarters), accompanied by a spike in latency and a dip in speeds as residents rushed to test connectivity.\n\n- **Test Volume Surge:** Fixed broadband tests jumped to 31,807 in 2024Q4 (z-score of 10.03 against historical trends), flagged as a major anomaly due to Hurricane Helene.\n- **Latency & Speed Impact:** Median download speed dropped slightly to 239.6 Mbps (down from ~254\u2013264 Mbps earlier in the year), while median latency increased to 29 ms (up from 24 ms).\n- **Mobile Network:** Mobile tests also increased significantly during 2024Q4 (2,454 tests compared to ~1,300\u20131,600 typically), with mobile download speeds dropping sharply to 125.97 Mbps.\n\n*Note: Speedtest metrics reflect user testing behavior during outages and congestion rather than total continuous uptime.*",
   "trace": {
    "llm_calls": 4,
    "input_tokens": 10496,
@@ -3945,7 +3945,7 @@
     "id": 0,
     "lang": "python",
     "purpose": "Plot national fixed vs mobile download speeds over time",
-    "code": "import plotly.express as px\n\nfig = px.line(\n    df, x='quarter', y=['fixed_download_mbps', 'mobile_download_mbps'],\n    labels={'value': 'Median Download Speed (Mbps)', 'quarter': 'Quarter', 'variable': 'Network Type'},\n    title='National Median Download Speeds: Fixed vs Mobile (2019–2026)'\n)\nfig.data[0].name = 'Home Broadband (Fixed)'\nfig.data[1].name = 'Mobile'\nfig.update_layout(legend_title_text='Network')\nfig.show()\n",
+    "code": "import plotly.express as px\n\nfig = px.line(\n    df, x='quarter', y=['fixed_download_mbps', 'mobile_download_mbps'],\n    labels={'value': 'Median Download Speed (Mbps)', 'quarter': 'Quarter', 'variable': 'Network Type'},\n    title='National Median Download Speeds: Fixed vs Mobile (2019\u20132026)'\n)\nfig.data[0].name = 'Home Broadband (Fixed)'\nfig.data[1].name = 'Mobile'\nfig.update_layout(legend_title_text='Network')\nfig.show()\n",
     "result": {
      "ok": true,
      "stdout": "",

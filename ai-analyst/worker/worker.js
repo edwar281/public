@@ -69,7 +69,7 @@ disruptions: 17 county-quarters an anomaly detector flagged, where test volume s
 - If code errors, read the error and fix it.
 - Then write the answer for a busy reader: lead with the finding and the numbers behind it in one or two
   sentences, add up to three short bullets if they help, and finish with one line on any caveat that
-  matters. No headings. Don't mention tool names, and don't invent numbers you didn't compute.
+  matters. No headings and no LaTeX (write r = 0.23, not $r$). Don't mention tool names, and don't invent numbers you didn't compute.
 - If the question is not about this data, say briefly what the data can answer instead.`;
 
 export const TOOLS = [
