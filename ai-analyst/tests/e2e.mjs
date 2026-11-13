@@ -56,6 +56,16 @@ try {
   await page.goto("http://127.0.0.1:8000/");
   await page.evaluate(() => window.analyst.ready);
   assert.equal(await page.locator(".chip").count(), 6);
+  console.log("CDN from page:", await page.evaluate(async () => {
+    try { const r = await fetch("https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js"); return `${r.status} ${r.headers.get("content-type")}`; }
+    catch (e) { return `ERR ${e}`; }
+  }));
+  console.log("CDN from worker:", await page.evaluate(() => new Promise((resolve) => {
+    const src = "try{importScripts('https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.js');postMessage('ok '+typeof loadPyodide)}catch(e){postMessage('ERR '+e)}";
+    const w = new Worker(URL.createObjectURL(new Blob([src], { type: "text/javascript" })));
+    w.onmessage = (ev) => resolve(ev.data);
+    w.onerror = (ev) => resolve(`onerror ${ev.message}`);
+  })));
 
   const t0 = Date.now();
   await page.fill("#question", "How have speeds changed?");
