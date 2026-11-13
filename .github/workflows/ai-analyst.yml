@@ -8,28 +8,7 @@ on:
     paths: ["ai-analyst/**", ".github/workflows/ai-analyst.yml"]
   workflow_dispatch:
     inputs:
-      deploy-worker:
-    # Deploys the Cloudflare Worker after the tests pass, once the Cloudflare secrets exist.
-    needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ai-analyst')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - name: Deploy with Wrangler
-        working-directory: ai-analyst/worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
-            echo "No Cloudflare secrets yet; skipping the Worker deploy."; exit 0
-          fi
-          npx --yes wrangler@4.149.0 deploy
-
-  record:
+      record:
         description: "Run the example questions live and save them (needs the Worker URL in config.js)"
         type: boolean
         default: true
@@ -58,6 +37,27 @@ jobs:
           name: e2e-failure
           path: ai-analyst/e2e-failure.png
           if-no-files-found: ignore
+
+  deploy-worker:
+    # Deploys the Cloudflare Worker after the tests pass, once the Cloudflare secrets exist.
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/ai-analyst')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy with Wrangler
+        working-directory: ai-analyst/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "No Cloudflare secrets yet; skipping the Worker deploy."; exit 0
+          fi
+          npx --yes wrangler@4.149.0 deploy
 
   record:
     if: github.event_name == 'workflow_dispatch' && inputs.record
