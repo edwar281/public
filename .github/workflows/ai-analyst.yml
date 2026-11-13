@@ -61,6 +61,30 @@ jobs:
           npx --yes wrangler@4.149.0 whoami || true
           npx --yes wrangler@4.149.0 deploy
 
+  preview:
+    # Publishes the ai-analyst branch to https://broadband-analyst-preview.pages.dev so it can be tried before merging.
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/ai-analyst'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Deploy the preview to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "No Cloudflare secrets yet; skipping the preview."; exit 0
+          fi
+          mkdir -p site
+          cp -r ai-analyst/index.html ai-analyst/app.js ai-analyst/config.js ai-analyst/sandbox.js ai-analyst/runtime.py \
+            ai-analyst/style.css ai-analyst/saved-runs.json ai-analyst/data site/
+          npx --yes wrangler@4.149.0 pages project create broadband-analyst-preview --production-branch ai-analyst || true
+          npx --yes wrangler@4.149.0 pages deploy site --project-name broadband-analyst-preview --branch ai-analyst --commit-dirty=true
+
   record:
     if: github.event_name == 'workflow_dispatch' && inputs.record
     runs-on: ubuntu-latest

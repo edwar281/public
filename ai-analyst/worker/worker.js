@@ -10,7 +10,12 @@
 //                    defaults to gemini-flash-latest,gemini-flash-lite-latest
 //   ALLOWED_ORIGINS  optional, comma-separated; defaults to the portfolio site and localhost
 
-const DEFAULT_ORIGINS = ["https://edwar281.github.io", "http://localhost:8000", "http://127.0.0.1:8000"];
+const DEFAULT_ORIGINS = [
+  "https://edwar281.github.io",
+  "https://broadband-analyst-preview.pages.dev", // preview of the ai-analyst branch on Cloudflare Pages
+  "http://localhost:8000",
+  "http://127.0.0.1:8000",
+];
 const MAX_BODY_BYTES = 400_000;
 const MAX_MESSAGES = 40;
 const CALLS_PER_IP_PER_MINUTE = 12;
