@@ -110,3 +110,16 @@ jobs:
           git diff --cached --quiet && { echo "Nothing new to save."; exit 0; }
           git commit -m "Save example answers for Broadband Analyst"
           git push
+      - name: Refresh the preview with the new answers
+        # Pushes made by this workflow don't start other runs, so the preview is refreshed here.
+        if: github.ref == 'refs/heads/ai-analyst'
+        working-directory: .
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || exit 0
+          mkdir -p site
+          cp -r ai-analyst/index.html ai-analyst/app.js ai-analyst/config.js ai-analyst/sandbox.js ai-analyst/runtime.py \
+            ai-analyst/style.css ai-analyst/saved-runs.json ai-analyst/data site/
+          npx --yes wrangler@4.149.0 pages deploy site --project-name broadband-analyst-preview --branch ai-analyst --commit-dirty=true
