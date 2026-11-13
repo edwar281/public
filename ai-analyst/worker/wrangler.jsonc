@@ -1,0 +1,11 @@
+// Deploy settings for the Cloudflare Worker. GitHub Actions deploys it on every change to worker/
+// when the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets are set.
+// GEMINI_API_KEY stays a secret set in the Cloudflare dashboard; deploys don't touch it.
+{
+  "name": "broadband-analyst",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "keep_vars": true,
+  "observability": { "enabled": true }
+}

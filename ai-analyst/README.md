@@ -41,6 +41,7 @@ To rebuild: run `make panel` in `ookla-broadband/`, then `python data/build_data
 ## Setting it up
 
 1. **Worker.** In the Cloudflare dashboard, create a Worker, replace its code with `worker/worker.js` and deploy. Under Settings > Variables and Secrets, add `GEMINI_API_KEY` as a secret (a key from [Google AI Studio](https://aistudio.google.com/apikey) in a project without billing stays on the free tier). Optional: `GEMINI_MODELS` (models to try in order, default `gemini-flash-latest,gemini-flash-lite-latest`), and `ALLOWED_ORIGINS` if the page moves to another domain.
+   To deploy updates automatically instead, add `CLOUDFLARE_API_TOKEN` (the "Edit Cloudflare Workers" token template) and `CLOUDFLARE_ACCOUNT_ID` as GitHub repository secrets. The workflow then runs `wrangler deploy` with `worker/wrangler.jsonc` after the tests pass.
 2. **Page.** Put the Worker's URL in `config.js`. GitHub Pages serves the folder as it is.
 3. **Example answers.** In GitHub, Actions > ai-analyst > Run workflow runs the six example questions live and commits `saved-runs.json`.
 
