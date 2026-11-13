@@ -45,6 +45,9 @@ const browser = await chromium.launch();
 const page = await browser.newPage();
 page.on("console", (m) => console.log(`[page] ${m.text()}`));
 page.on("pageerror", (e) => console.log(`[page error] ${e.message}`));
+page.on("requestfailed", (r) => console.log(`[request failed] ${r.url()} ${r.failure()?.errorText}`));
+page.on("response", (r) => { if (r.status() >= 300) console.log(`[response] ${r.status()} ${r.url()}`); });
+page.on("worker", (w) => console.log(`[worker] ${w.url()}`));
 await page.addInitScript(() => {
   window.ANALYST_CONFIG = { workerUrl: "http://127.0.0.1:8787", stepTimeoutMs: 15000 };
 });
