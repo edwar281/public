@@ -1,39 +1,65 @@
-# Tests every push that touches ai-analyst/. Deploys to the Oracle VM on main when the
-# ORACLE_HOST, ORACLE_USER and ORACLE_SSH_KEY repository secrets are set.
+# Broadband Analyst (ai-analyst/): tests on every change, and a button to save fresh example answers.
 name: ai-analyst
 
 on:
   push:
     paths: ["ai-analyst/**", ".github/workflows/ai-analyst.yml"]
   pull_request:
-    paths: ["ai-analyst/**"]
+    paths: ["ai-analyst/**", ".github/workflows/ai-analyst.yml"]
+  workflow_dispatch:
+    inputs:
+      record:
+        description: "Run the example questions live and save them (needs the Worker URL in config.js)"
+        type: boolean
+        default: true
 
 jobs:
   test:
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: ai-analyst
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-node@v4
         with:
-          python-version: "3.13"
-      - run: pip install -r api/requirements.txt -r runner/requirements.txt pytest
-      - run: python -m pytest -q tests
+          node-version: "22"
+      - name: Worker unit tests
+        run: node --test tests/worker.test.mjs
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.65.0 && npx playwright install --with-deps chromium
+      - name: Browser test (Pyodide, DuckDB and the agent loop)
+        run: node tests/e2e.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: e2e-failure
+          path: ai-analyst/e2e-failure.png
+          if-no-files-found: ignore
 
-  deploy:
-    needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+  record:
+    if: github.event_name == 'workflow_dispatch' && inputs.record
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: ai-analyst
     steps:
-      - name: Deploy over SSH
-        env:
-          HOST: ${{ secrets.ORACLE_HOST }}
-          USER: ${{ secrets.ORACLE_USER }}
-          KEY: ${{ secrets.ORACLE_SSH_KEY }}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Playwright
+        run: npm install --no-save --no-package-lock playwright@1.65.0 && npx playwright install --with-deps chromium
+      - name: Run the example questions live
+        run: node tests/record.mjs
+      - name: Commit the saved runs
         run: |
-          if [ -z "$HOST" ]; then echo "No ORACLE_HOST secret; skipping deploy."; exit 0; fi
-          mkdir -p ~/.ssh && echo "$KEY" > ~/.ssh/id && chmod 600 ~/.ssh/id
-          ssh -i ~/.ssh/id -o StrictHostKeyChecking=accept-new "$USER@$HOST" \
-            'cd ~/public && git pull --ff-only && cd ai-analyst && docker compose up -d --build && docker image prune -f'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add saved-runs.json
+          git diff --cached --quiet && { echo "Nothing new to save."; exit 0; }
+          git commit -m "Save example answers for Broadband Analyst"
+          git push

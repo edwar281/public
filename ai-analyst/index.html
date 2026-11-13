@@ -43,12 +43,12 @@
   <section class="how">
     <h2 class="section-title">How it works</h2>
     <ol class="flow">
-      <li>Gemini plans the analysis. A FastAPI service holds the conversation and gives the model two tools, one for SQL and one for Python.</li>
-      <li>Each piece of code runs in a separate container that has no internet access, a read-only disk, and strict time and memory limits. Every job starts from a clean process.</li>
+      <li>Gemini plans the analysis. A small Cloudflare Worker keeps the API key off this page and passes the conversation to Gemini along with two tools, one for SQL and one for Python.</li>
+      <li>The code runs here, in your browser. Python and DuckDB, compiled to WebAssembly, load the data into a background worker that is separate from this page, and any step that runs longer than 30 seconds is stopped.</li>
       <li>The results go back to the model, which reads them, corrects its own errors and writes the answer. Token counts and timings for the model and the code appear under each answer.</li>
     </ol>
-    <p class="muted small">The example questions replay a saved live run, so they load instantly. Your own questions run live on Gemini's free tier, which has a daily limit. <span id="stats"></span></p>
-    <p class="small">Runs on an Oracle Cloud free-tier server in Docker. <a href="https://github.com/edwar281/public/tree/main/ai-analyst">Code on GitHub</a> &middot; <a href="https://edwar281.github.io/public/ookla-broadband/dashboard/">The broadband analysis this data comes from</a></p>
+    <p class="muted small">The example questions replay a saved live run, so they load instantly. Your own questions run live on Gemini's free tier, which has a daily limit.</p>
+    <p class="small">Hosted for free on GitHub Pages and Cloudflare Workers. <a href="https://github.com/edwar281/public/tree/main/ai-analyst">Code on GitHub</a> &middot; <a href="https://edwar281.github.io/public/ookla-broadband/dashboard/">The broadband analysis this data comes from</a></p>
   </section>
 </main>
 
@@ -67,6 +67,7 @@
   </article>
 </template>
 
+<script src="config.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

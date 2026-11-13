@@ -1,9 +1,0 @@
-fastapi==0.162.0
-uvicorn==0.53.0
-duckdb==1.5.1
-pandas==3.0.2
-numpy==2.4.6
-matplotlib==3.10.8
-scipy==1.18.0
-statsmodels==0.14.6
-pyarrow==22.0.0

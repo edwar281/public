@@ -1,12 +1,9 @@
 """Runs one AI-written SQL query or Python snippet against the Ookla tables.
 
-runner.py starts this file as a fresh subprocess for every job, with CPU, memory and
-file limits, inside a container that has no network access and a read-only filesystem.
-Usage: python -I runtime.py < job.json   (job = {"lang": "sql"|"python", "code": "..."})
+This file runs in the visitor's browser, inside Pyodide in a Web Worker (see sandbox.js).
+sandbox.js writes the parquet files to /data, calls connect('/data') once, then run() per step.
 """
 import base64
-import os
-import sys
 import contextlib
 import io
 import json
@@ -38,12 +35,13 @@ def connect(data_dir):
     """Open an in-memory database with one table per parquet file, then lock it down."""
     global con
     con = duckdb.connect()
-    con.execute("SET threads = 2")
-    con.execute("SET memory_limit = '768MB'")
     for t in TABLES:
         con.execute(f"CREATE TABLE {t} AS SELECT * FROM read_parquet('{data_dir}/{t}.parquet')")
-    con.execute("SET enable_external_access = false")
-    con.execute("SET lock_configuration = true")
+    for setting in ("SET enable_external_access = false", "SET lock_configuration = true"):
+        try:
+            con.execute(setting)
+        except Exception:  # not every DuckDB build exposes these settings
+            pass
 
 
 def sql(query):
@@ -92,8 +90,3 @@ def run(lang, code):
     result["tables"] = tables[:4]
     return json.dumps(result)
 
-
-if __name__ == "__main__":
-    job = json.load(sys.stdin)
-    connect(os.environ.get("DATA_DIR", "/data"))
-    sys.stdout.write(run(job["lang"], job["code"]))
